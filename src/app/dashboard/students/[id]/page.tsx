@@ -121,7 +121,7 @@ export default function StudentDetailsPage({ params }: { params: { id: string } 
                  </div>
                  <div>
                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">{t('student_details_topic')}</p>
-                     <p className="text-sm font-bold text-slate-900">{student.learning_topic}</p>
+                     <p className="text-sm font-bold text-slate-900">{student.learning_topic || t(`stage_${student.learning_stage || 1}` as any)}</p>
                  </div>
                </div>
 
@@ -176,7 +176,7 @@ export default function StudentDetailsPage({ params }: { params: { id: string } 
             </CardContent>
           </Card>
 
-          <Card className="border-slate-200/60 shadow-sm overflow-hidden bg-white/80 backdrop-blur-xl">
+          <Card className="border-slate-200/60 shadow-sm bg-white/80 backdrop-blur-xl">
             <CardHeader className="border-b border-slate-100/50 pb-4 bg-slate-50/30">
               <CardTitle className="text-base font-bold flex items-center gap-2 text-slate-800">
                 <CheckCircle2 className="h-4 w-4 text-indigo-500" />
@@ -184,47 +184,63 @@ export default function StudentDetailsPage({ params }: { params: { id: string } 
               </CardTitle>
             </CardHeader>
             <CardContent className="p-0">
-               <div className="overflow-x-auto p-6 scrollbar-hide py-10 pb-20">
-                 <div className="flex min-w-max gap-4 items-center">
-                   {Array.from({length: 10}).map((_, idx) => {
-                     const stageNum = idx + 1;
-                     const isCompleted = stageNum < (student.learning_stage || 1);
-                     const isCurrent = stageNum === (student.learning_stage || 1);
-                     const isFuture = stageNum > (student.learning_stage || 1);
-                     return (
-                       <div key={stageNum} className="flex items-center">
-                         {idx !== 0 && (
-                           <div className={`h-1 w-8 sm:w-12 mx-2 rounded-full transition-colors shadow-[inset_0_1px_2px_rgba(0,0,0,0.1)] ${isCompleted ? 'bg-indigo-500' : 'bg-slate-200'}`} />
-                         )}
-                         <div className="flex flex-col items-center group cursor-default relative">
-                           <div className={`h-10 w-10 sm:h-12 sm:w-12 rounded-full flex items-center justify-center shrink-0 border-4 transition-all shadow-md z-10 ${
-                             isCompleted ? 'bg-indigo-500 border-indigo-600 text-white' : 
-                             isCurrent ? 'bg-white border-indigo-600 text-indigo-700 shadow-lg shadow-indigo-100 ring-4 ring-indigo-50 scale-125' : 
-                             'bg-slate-50 border-slate-100 text-slate-300'
-                           }`}>
-                             {isCompleted ? <CheckCircle2 className="h-5 w-5 sm:h-6 sm:w-6" /> : <span className="text-sm sm:text-base font-black">{stageNum}</span>}
-                           </div>
-                           <p className={`mt-4 text-[10px] sm:text-xs font-bold whitespace-nowrap ${isCurrent ? 'text-indigo-700' : isFuture ? 'text-slate-400' : 'text-slate-700'}`}>
-                             {t(`stage_${stageNum}` as any)}
-                           </p>
-                           {isCurrent && stageNum === 1 && (
-                             <div className="absolute top-16 left-0 sm:left-1/2 sm:-translate-x-1/2 mt-3 w-48 sm:w-52 text-xs text-slate-600 bg-white p-3.5 rounded-2xl border border-indigo-100 shadow-xl shadow-indigo-500/10 z-20">
-                               <p className="font-bold text-indigo-900 mb-2 border-b border-indigo-100 pb-1.5 text-center">Current Focus:</p>
-                               <ul className="list-disc pl-4 space-y-1.5 font-medium">
-                                 <li>ወንጌለ ዮሐንስ</li>
-                                 <li>ውዳሴ ማርያም</li>
-                                 <li>አንቀጸ ብርሃን</li>
-                                 <li>ይወድስዋ መላእክት</li>
-                               </ul>
-                             </div>
-                           )}
-                         </div>
-                       </div>
-                     )
-                   })}
-                 </div>
-               </div>
-             </CardContent>
+              <div className="overflow-x-auto p-4 sm:p-6 scrollbar-hide py-10">
+                <div className="flex min-w-max gap-4 items-center">
+                  {Array.from({length: 10}).map((_, idx) => {
+                    const stageNum = idx + 1;
+                    const isCompleted = stageNum < (student.learning_stage || 1);
+                    const isCurrent = stageNum === (student.learning_stage || 1);
+                    const isFuture = stageNum > (student.learning_stage || 1);
+                    return (
+                      <div key={stageNum} className="flex items-center">
+                        {idx !== 0 && (
+                          <div className={`h-1 w-6 sm:w-12 mx-1.5 sm:mx-2 rounded-full transition-colors shadow-[inset_0_1px_2px_rgba(0,0,0,0.1)] ${isCompleted ? 'bg-indigo-500' : 'bg-slate-200'}`} />
+                        )}
+                        <div className="flex flex-col items-center group cursor-default relative">
+                          <div className={`h-10 w-10 sm:h-12 sm:w-12 rounded-full flex items-center justify-center shrink-0 border-4 transition-all shadow-md z-10 ${
+                            isCompleted ? 'bg-indigo-500 border-indigo-600 text-white' : 
+                            isCurrent ? 'bg-white border-indigo-600 text-indigo-700 shadow-lg shadow-indigo-100 ring-4 ring-indigo-50 scale-125' : 
+                            'bg-slate-50 border-slate-100 text-slate-300'
+                          }`}>
+                            {isCompleted ? <CheckCircle2 className="h-5 w-5 sm:h-6 sm:w-6" /> : <span className="text-sm sm:text-base font-black">{stageNum}</span>}
+                          </div>
+                          <p className={`mt-4 text-[10px] sm:text-xs font-bold whitespace-nowrap ${isCurrent ? 'text-indigo-700' : isFuture ? 'text-slate-400' : 'text-slate-700'}`}>
+                            {t(`stage_${stageNum}` as any)}
+                          </p>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+
+              {/* Current Focus section - rendered below the scrollable stages, not clipped */}
+              <div className="px-4 sm:px-6 pb-6">
+                <div className="rounded-2xl border border-indigo-100 bg-gradient-to-br from-indigo-50/50 to-white p-4 sm:p-5">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="h-2 w-2 rounded-full bg-indigo-500 animate-pulse" />
+                    <p className="font-bold text-indigo-900 text-sm sm:text-base">
+                      {t('student_details_current_focus' as any) || "Current Focus"}: {t(`stage_${student.learning_stage || 1}` as any)}
+                    </p>
+                  </div>
+                  {(student.learning_stage || 1) === 1 ? (
+                    <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {["ወንጌለ ዮሐንስ", "ውዳሴ ማርያም", "አንቀጸ ብርሃን", "ይወድስዋ መላእክት"].map((subject, i) => (
+                        <li key={i} className="flex items-center gap-2.5 text-sm sm:text-base text-slate-700 font-medium bg-white/80 rounded-xl px-3.5 py-2.5 border border-indigo-50 shadow-sm">
+                          <span className="h-2 w-2 rounded-full bg-indigo-400 shrink-0" />
+                          {subject}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <div className="flex items-center gap-2.5 text-sm sm:text-base text-slate-700 font-medium bg-white/80 rounded-xl px-3.5 py-2.5 border border-indigo-50 shadow-sm">
+                      <span className="h-2 w-2 rounded-full bg-indigo-400 shrink-0" />
+                      {student.learning_topic || `${t('student_details_no_topic' as any)} — ${t('student_details_no_topic_hint' as any)}`}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </CardContent>
           </Card>
         </div>
       </div>

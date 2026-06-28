@@ -118,7 +118,10 @@ export default function NewStudentPage() {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <Label className="text-slate-700 font-bold ml-1">{t('new_student_topic')}</Label>
+                <Label className="text-slate-700 font-bold ml-1">
+                  {t('new_student_topic')}
+                  {formData.learning_stage !== 1 && <span className="text-slate-400 font-normal text-xs ml-2">(optional)</span>}
+                </Label>
                 {formData.learning_stage === 1 ? (
                   <select required value={formData.learning_topic} onChange={(e: any) => setFormData({...formData, learning_topic: e.target.value})} className="flex h-11 w-full rounded-xl border border-slate-200 bg-white px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer">
                     <option value="" disabled>Select course...</option>
@@ -129,7 +132,7 @@ export default function NewStudentPage() {
                     <option value="መልክዐ ማርያም / መልክዐ ኢየሱስ">መልክዐ ማርያም / መልክዐ ኢየሱስ</option>
                   </select>
                 ) : (
-                  <Input required placeholder="e.g. General Studies" className="h-11 rounded-xl" value={formData.learning_topic} onChange={(e: any) => setFormData({...formData, learning_topic: e.target.value})} />
+                  <Input placeholder="Optional — e.g. General Studies" className="h-11 rounded-xl" value={formData.learning_topic} onChange={(e: any) => setFormData({...formData, learning_topic: e.target.value})} />
                 )}
               </div>
             </div>

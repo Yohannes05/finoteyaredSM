@@ -72,17 +72,33 @@ export default function AttendancePage() {
     }
   }
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { duration: 0.5, staggerChildren: 0.08 } }
+  }
+  const itemVariants = { hidden: { opacity: 0, y: 24 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" as const } } }
+
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">{t('attendance_title')}</h2>
-        <div className="flex items-center gap-2 bg-white border border-slate-200 px-3 py-1.5 rounded-xl shadow-sm text-black">
-          <Calendar className="h-4 w-4 text-slate-500 shrink-0 " />
-          <EthioDatePicker
-            value={selectedDate}
-            onChange={(val) => setSelectedDate(val)}
-          />
+    <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-8 max-w-6xl mx-auto">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <motion.h2 variants={itemVariants} className="text-3xl sm:text-4xl font-black tracking-tight text-slate-900">
+            {t('attendance_title')}
+          </motion.h2>
+          <motion.p variants={itemVariants} className="text-slate-500 mt-1.5 font-medium">
+            {t('attendance_roster_subtitle')}
+          </motion.p>
         </div>
+        <motion.div variants={itemVariants} className="flex items-center gap-2">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border border-slate-200 bg-white shadow-sm">
+            <Calendar className="h-4 w-4 text-indigo-500 shrink-0" />
+            <EthioDatePicker
+              value={selectedDate}
+              onChange={(val) => setSelectedDate(val)}
+            />
+          </div>
+        </motion.div>
       </div>
 
       <Card className="shadow-md border-slate-200 overflow-hidden">
@@ -178,7 +194,7 @@ export default function AttendancePage() {
           </div>
         </CardContent>
       </Card>
-    </div>
+    </motion.div>
   )
 }
 

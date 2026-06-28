@@ -31,11 +31,22 @@ export default function Header({ onMenuClick }: { onMenuClick?: () => void }) {
     const isUUID = last.length > 20 && last.includes('-')
     
     if (last === 'students') return t('nav_students')
+    if (last === 'deacons') return t('nav_deacons')
     if (last === 'attendance') return t('nav_attendance')
     if (last === 'payments') return t('nav_payments')
-    if (last === 'new') return t('new_student_title')
-    if (last === 'edit') return t('header_edit_student' as any)
-    if (isUUID) return t('header_student_details' as any)
+    if (last === 'schedule') return t('nav_schedule')
+    if (last === 'new') {
+      if (parts.includes('deacons')) return t('deacon_new_title')
+      return t('new_student_title')
+    }
+    if (last === 'edit') {
+      if (parts.includes('deacons')) return t('deacon_edit_title')
+      return t('header_edit_student' as any)
+    }
+    if (isUUID) {
+      if (parts.includes('deacons')) return t('deacon_details_title')
+      return t('header_student_details' as any)
+    }
     
     return last.charAt(0).toUpperCase() + last.slice(1)
   }

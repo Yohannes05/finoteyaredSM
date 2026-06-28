@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Users, CalendarCheck, ChevronRight } from 'lucide-react'
+import { LayoutDashboard, Users, CalendarCheck, Cross, ChevronRight } from 'lucide-react'
 import { cn } from "@/lib/utils"
 import { motion } from "framer-motion"
 import { useLanguage } from "@/lib/LanguageContext"
@@ -14,6 +14,7 @@ export default function Sidebar() {
   const tabs = [
     { nameKey: 'nav_dashboard' as const, href: '/dashboard', icon: LayoutDashboard },
     { nameKey: 'nav_students' as const, href: '/dashboard/students', icon: Users },
+    { nameKey: 'nav_deacons' as const, href: '/dashboard/deacons', icon: Cross },
     { nameKey: 'nav_attendance' as const, href: '/dashboard/attendance', icon: CalendarCheck },
   ]
 

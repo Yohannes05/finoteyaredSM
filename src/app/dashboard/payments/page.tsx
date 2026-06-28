@@ -107,45 +107,67 @@ export default function PaymentsPage() {
     }
   }
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { duration: 0.5, staggerChildren: 0.08 } }
+  }
+  const itemVariants = { hidden: { opacity: 0, y: 24 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" as const } } }
+
   return (
-    <>
-    <div className="space-y-6 max-w-6xl mx-auto">
-      <div className="flex items-center justify-between">
-        <h2 className="text-3xl font-bold tracking-tight text-slate-900">{t('payments_title')}</h2>
-        <div className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-xs font-semibold flex items-center shadow-sm border border-blue-100">
-           <CreditCard className="h-3 w-3 mr-1" /> {t('payments_financial')}
+    <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-8 max-w-6xl mx-auto">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <motion.h2 variants={itemVariants} className="text-3xl sm:text-4xl font-black tracking-tight text-slate-900">
+            {t('payments_title')}
+          </motion.h2>
+          <motion.p variants={itemVariants} className="text-slate-500 mt-1.5 font-medium">
+            {t('payments_financial')}
+          </motion.p>
         </div>
+        <motion.div variants={itemVariants}>
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 border border-blue-200 shadow-sm">
+            <CreditCard className="h-3.5 w-3.5" />
+            {t('common_live')}
+          </div>
+        </motion.div>
       </div>
       
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-          <Card className="border-slate-200 bg-white">
-            <CardContent className="p-6 flex items-center gap-4">
-              <div className="h-12 w-12 rounded-xl bg-blue-50 flex items-center justify-center">
-                  <CreditCard className="h-6 w-6 text-blue-600" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        <motion.div variants={itemVariants} className="group">
+          <div className="relative rounded-2xl border border-slate-200 bg-white p-6 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-blue-50/50 to-transparent rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-110" />
+            <div className="relative flex items-center gap-4">
+              <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-100 shrink-0">
+                <CreditCard className="h-6 w-6 text-white" />
               </div>
               <div>
-                <p className="text-sm font-medium text-slate-500">{t('dashboard_total_revenue' as any) || 'Total Revenue'}</p>
+                <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">{t('dashboard_total_revenue' as any) || 'Total Revenue'}</p>
                 <div className="flex items-baseline gap-2">
-                    <span className="text-2xl font-bold text-slate-900">{t('currency_prefix' as any)}{paymentsSum.toLocaleString(undefined, { minimumFractionDigits: 2 })}{t('currency_suffix' as any)}</span>
+                    <span className="text-3xl font-black text-slate-900">{t('currency_prefix' as any)}{paymentsSum.toLocaleString(undefined, { minimumFractionDigits: 2 })}{t('currency_suffix' as any)}</span>
                     <span className="text-xs font-bold text-emerald-600">+{t('currency_prefix' as any)}{paymentsExtraSum.toLocaleString(undefined, { minimumFractionDigits: 2 })}{t('currency_suffix' as any)} Extra</span>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-          <Card className="border-slate-200 bg-white">
-            <CardContent className="p-6 flex items-center gap-4">
-              <div className="h-12 w-12 rounded-xl bg-emerald-50 flex items-center justify-center">
-                  <CreditCard className="h-6 w-6 text-emerald-600" />
+            </div>
+          </div>
+        </motion.div>
+        <motion.div variants={itemVariants} className="group">
+          <div className="relative rounded-2xl border border-slate-200 bg-white p-6 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-emerald-50/50 to-transparent rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-110" />
+            <div className="relative flex items-center gap-4">
+              <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-100 shrink-0">
+                <CreditCard className="h-6 w-6 text-white" />
               </div>
               <div>
-                <p className="text-sm font-medium text-slate-500">{t('dashboard_daily_collection' as any) || 'Collections Today'}</p>
+                <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">{t('dashboard_daily_collection' as any) || 'Collections Today'}</p>
                 <div className="flex items-baseline gap-2">
-                    <span className="text-2xl font-bold text-slate-900">{t('currency_prefix' as any)}{paymentsTodaySum.toLocaleString(undefined, { minimumFractionDigits: 2 })}{t('currency_suffix' as any)}</span>
+                    <span className="text-3xl font-black text-slate-900">{t('currency_prefix' as any)}{paymentsTodaySum.toLocaleString(undefined, { minimumFractionDigits: 2 })}{t('currency_suffix' as any)}</span>
                     <span className="text-xs font-bold text-emerald-600">+{t('currency_prefix' as any)}{paymentsTodayExtraSum.toLocaleString(undefined, { minimumFractionDigits: 2 })}{t('currency_suffix' as any)} Extra</span>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
+        </motion.div>
       </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
@@ -387,7 +409,6 @@ export default function PaymentsPage() {
           </Card>
         </motion.div>
       </div>
-    </div>
       <AnimatePresence>
         {selectedHistoryStudent && (
           <motion.div 
@@ -449,6 +470,6 @@ export default function PaymentsPage() {
           </motion.div>
         )}
       </AnimatePresence>
-    </>
+    </motion.div>
   )
 }

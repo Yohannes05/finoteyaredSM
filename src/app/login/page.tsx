@@ -23,24 +23,18 @@ export default function LoginPage() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
-    setIsLoading(true)
     setError(null)
+
+    if (password.length < 8) {
+      setError(t('login_password_length'))
+      return
+    }
+
+    setIsLoading(true)
     
     try {
         const email = username.trim()
-            
-        console.log("DEBUG: Sending this exact email to Supabase ->", email)
 
-        const allowedEmailsStr = process.env.NEXT_PUBLIC_ALLOWED_ADMIN_EMAILS
-        if (allowedEmailsStr) {
-            const allowedEmails = allowedEmailsStr.split(',').map(e => e.trim().toLowerCase())
-            if (!allowedEmails.includes(email.toLowerCase())) {
-                setError(language === "am" ? "ያልተፈቀደ ኢሜይል ነው።" : "Unauthorized email address.")
-                setIsLoading(false)
-                return
-            }
-        }
-        
         const { error } = await supabase.auth.signInWithPassword({
             email,
             password
@@ -56,7 +50,6 @@ export default function LoginPage() {
         setIsLoading(false)
     }
   }
-
   return (
     <div className="flex min-h-screen w-full items-center justify-center bg-[#f8fafc] relative overflow-hidden">
       <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
@@ -140,6 +133,7 @@ export default function LoginPage() {
                         value={password}
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
                         required
+                        minLength={8}
                     />
                     <button 
                         type="button"
@@ -150,8 +144,9 @@ export default function LoginPage() {
                     </button>
                 </div>
               </div>
+
             </CardContent>
-            <CardFooter className="pt-2 pb-8">
+            <CardFooter className="pt-2 pb-8 flex flex-col gap-3">
               <Button 
                 className="w-full h-12 rounded-xl bg-indigo-600 hover:bg-indigo-700 font-bold text-base shadow-lg shadow-indigo-100 transition-all active:scale-[0.98]" 
                 type="submit" 

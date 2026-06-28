@@ -96,7 +96,18 @@ export default function StudentsPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4 text-slate-600">{s.phone}</td>
-                    <td className="px-6 py-4 text-slate-600 font-medium">{s.learning_topic}</td>
+                    <td className="px-6 py-4">
+                      {s.learning_topic ? (
+                        <span className="text-slate-700 font-medium">{s.learning_topic}</span>
+                      ) : (
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[11px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-100">
+                            {t(`stage_${s.learning_stage || 1}` as any)}
+                          </span>
+                          <span className="text-xs text-slate-400">— {t('students_no_topic')}</span>
+                        </div>
+                      )}
+                    </td>
                     <td className="px-6 py-4">
                       <span className={`px-3 py-1 rounded-full text-[10px] font-bold border tracking-wide shadow-sm ${s.status === 'active'
                           ? 'bg-emerald-50 text-emerald-700 border-emerald-100'

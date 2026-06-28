@@ -2,9 +2,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { useEffect, useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Users, CalendarCheck, TrendingUp, BookOpen } from "lucide-react"
+import { Users, BookOpen, Cross, GraduationCap, UserCheck, Activity } from "lucide-react"
 import { supabase } from "@/lib/supabase/client"
 import { motion } from "framer-motion"
 import { useLanguage } from "@/lib/LanguageContext"
@@ -13,6 +12,8 @@ export default function Dashboard() {
   const [studentsCount, setStudentsCount] = useState(0)
   const [boysCount, setBoysCount] = useState(0)
   const [activeStudentsCount, setActiveStudentsCount] = useState(0)
+  const [deaconsCount, setDeaconsCount] = useState(0)
+  const [girlsCount, setGirlsCount] = useState(0)
   const [demographics, setDemographics] = useState({
     children: { boys: 0, girls: 0 },
     teens: { boys: 0, girls: 0 },
@@ -27,8 +28,9 @@ export default function Dashboard() {
     async function loadData() {
       const { data: studentsData } = await supabase.from('students').select('gender, age, learning_stage, learning_topic')
       const studentsArray = studentsData || []
-      
+
       let totalBoys = 0
+      let totalGirls = 0
       const newDemographics = {
         children: { boys: 0, girls: 0 },
         teens: { boys: 0, girls: 0 },
@@ -48,7 +50,8 @@ export default function Dashboard() {
       studentsArray.forEach(s => {
         const isBoy = s.gender === 'male'
         if (isBoy) totalBoys++
-        
+        else totalGirls++
+
         const age = s.age || 0
         if (age < 13) {
           if (isBoy) newDemographics.children.boys++
@@ -71,15 +74,15 @@ export default function Dashboard() {
           if (newTopicCounts[s.learning_topic] !== undefined) {
             newTopicCounts[s.learning_topic]++
           } else {
-            // For older records where topics might be arbitrary
             if (!newTopicCounts["Other"]) newTopicCounts["Other"] = 0;
             newTopicCounts["Other"]++
           }
         }
       })
-      
+
       setStudentsCount(studentsArray.length)
       setBoysCount(totalBoys)
+      setGirlsCount(totalGirls)
       setDemographics(newDemographics)
       setStagesCount(newStagesCount)
       setTopicCounts(newTopicCounts)
@@ -87,6 +90,8 @@ export default function Dashboard() {
       const { count: activeCount } = await supabase.from('students').select('*', { count: 'exact', head: true }).eq('status', 'active')
       setActiveStudentsCount(activeCount || 0)
 
+      const { count: deaconsCountData } = await supabase.from('deacons').select('*', { count: 'exact', head: true })
+      setDeaconsCount(deaconsCountData || 0)
 
       setIsLoading(false)
     }
@@ -94,206 +99,244 @@ export default function Dashboard() {
   }, [])
 
   const containerVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.4, staggerChildren: 0.1 } }
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { duration: 0.5, staggerChildren: 0.08 } }
   }
-  const itemVariants = { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }
+  const itemVariants = { hidden: { opacity: 0, y: 24 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" as const } } }
+
+  const maxStageCount = Math.max(...Object.values(stagesCount), 1)
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
-        <Skeleton className="h-8 w-48" />
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+      <div className="space-y-8">
+        <div className="flex items-center justify-between">
+          <div>
+            <Skeleton className="h-9 w-48" />
+            <Skeleton className="h-5 w-64 mt-2" />
+          </div>
+          <Skeleton className="h-7 w-28 rounded-full" />
+        </div>
+        <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
           {[1, 2, 3, 4].map((i) => (
-            <Card key={i} className="border-slate-200">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <Skeleton className="h-4 w-24" />
-                <Skeleton className="h-8 w-8 rounded-full" />
-              </CardHeader>
-              <CardContent>
-                <Skeleton className="h-9 w-16 mb-2" />
-                <Skeleton className="h-3 w-32" />
-              </CardContent>
-            </Card>
+            <div key={i} className="rounded-2xl border border-slate-200 bg-white p-6 space-y-4">
+              <Skeleton className="h-10 w-10 rounded-xl" />
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-8 w-16" />
+            </div>
           ))}
         </div>
       </div>
     )
   }
 
+  const activePercent = studentsCount > 0 ? Math.round((activeStudentsCount / studentsCount) * 100) : 0
+
   return (
-    <motion.div initial="hidden" animate="visible" variants={containerVariants} className="space-y-6">
-      <div className="flex items-center justify-between">
+    <motion.div initial="hidden" animate="visible" variants={containerVariants} className="space-y-8">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight text-slate-900">{t('dashboard_title')}</h2>
-          <p className="text-slate-500 mt-1">{t('dashboard_subtitle')}</p>
+          <motion.h2 variants={itemVariants} className="text-3xl sm:text-4xl font-black tracking-tight text-slate-900">
+            {t('dashboard_title')}
+          </motion.h2>
+          <motion.p variants={itemVariants} className="text-slate-500 mt-1.5 font-medium">
+            {t('dashboard_subtitle')}
+          </motion.p>
         </div>
-        <div className="bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full text-xs font-semibold flex items-center shadow-sm border border-emerald-100">
-           <TrendingUp className="h-3 w-3 mr-1" /> System Active
-        </div>
-      </div>
-      
-      <div className="grid gap-4 grid-cols-1 sm:grid-cols-3 mb-6">
         <motion.div variants={itemVariants}>
-          <Card className="hover:shadow-lg transition-all duration-300 border-slate-200">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 bg-pink-50/50 rounded-t-xl">
-              <CardTitle className="text-base font-bold text-pink-700">Children {"(< 13)"}</CardTitle>
-              <div className="text-xs font-bold bg-pink-100 text-pink-700 px-2 py-1 rounded-full">{demographics.children.boys + demographics.children.girls} Total</div>
-            </CardHeader>
-            <CardContent className="pt-4 pb-4">
-              <div className="flex justify-between items-center text-sm">
-                <div className="flex items-center gap-2"><div className="h-2 w-2 rounded-full bg-blue-500"></div><span className="font-semibold text-slate-600">{t('dashboard_boys' as any)}</span></div>
-                <span className="font-bold text-slate-900">{demographics.children.boys}</span>
-              </div>
-              <div className="h-px w-full bg-slate-100 my-2"></div>
-              <div className="flex justify-between items-center text-sm">
-                <div className="flex items-center gap-2"><div className="h-2 w-2 rounded-full bg-pink-500"></div><span className="font-semibold text-slate-600">{t('dashboard_girls' as any)}</span></div>
-                <span className="font-bold text-slate-900">{demographics.children.girls}</span>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        <motion.div variants={itemVariants}>
-          <Card className="hover:shadow-lg transition-all duration-300 border-slate-200">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 bg-indigo-50/50 rounded-t-xl">
-              <CardTitle className="text-base font-bold text-indigo-700">Teens {"(13 - 17)"}</CardTitle>
-              <div className="text-xs font-bold bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full">{demographics.teens.boys + demographics.teens.girls} Total</div>
-            </CardHeader>
-            <CardContent className="pt-4 pb-4">
-              <div className="flex justify-between items-center text-sm">
-                <div className="flex items-center gap-2"><div className="h-2 w-2 rounded-full bg-blue-500"></div><span className="font-semibold text-slate-600">{t('dashboard_boys' as any)}</span></div>
-                <span className="font-bold text-slate-900">{demographics.teens.boys}</span>
-              </div>
-              <div className="h-px w-full bg-slate-100 my-2"></div>
-              <div className="flex justify-between items-center text-sm">
-                <div className="flex items-center gap-2"><div className="h-2 w-2 rounded-full bg-pink-500"></div><span className="font-semibold text-slate-600">{t('dashboard_girls' as any)}</span></div>
-                <span className="font-bold text-slate-900">{demographics.teens.girls}</span>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        <motion.div variants={itemVariants}>
-          <Card className="hover:shadow-lg transition-all duration-300 border-slate-200">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 bg-amber-50/50 rounded-t-xl">
-              <CardTitle className="text-base font-bold text-amber-700">Adults {"(18+)"}</CardTitle>
-              <div className="text-xs font-bold bg-amber-100 text-amber-700 px-2 py-1 rounded-full">{demographics.adults.boys + demographics.adults.girls} Total</div>
-            </CardHeader>
-            <CardContent className="pt-4 pb-4">
-              <div className="flex justify-between items-center text-sm">
-                <div className="flex items-center gap-2"><div className="h-2 w-2 rounded-full bg-blue-500"></div><span className="font-semibold text-slate-600">{t('dashboard_boys' as any)}</span></div>
-                <span className="font-bold text-slate-900">{demographics.adults.boys}</span>
-              </div>
-              <div className="h-px w-full bg-slate-100 my-2"></div>
-              <div className="flex justify-between items-center text-sm">
-                <div className="flex items-center gap-2"><div className="h-2 w-2 rounded-full bg-pink-500"></div><span className="font-semibold text-slate-600">{t('dashboard_girls' as any)}</span></div>
-                <span className="font-bold text-slate-900">{demographics.adults.girls}</span>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold bg-gradient-to-r from-emerald-50 to-emerald-100 text-emerald-700 border border-emerald-200 shadow-sm">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+            </span>
+            {t('common_live')}
+          </div>
         </motion.div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-3">
-        <motion.div variants={itemVariants}>
-          <Card className="hover:shadow-lg transition-all duration-300 border-slate-200 group">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-slate-600">{t('dashboard_total_students')}</CardTitle>
-              <div className="h-10 w-10 rounded-xl bg-emerald-50 group-hover:bg-emerald-100 flex items-center justify-center transition-colors">
-                  <Users className="h-5 w-5 text-emerald-600" />
+      {/* Key Metrics Row */}
+      <div className="grid gap-5 grid-cols-2 lg:grid-cols-4">
+        <motion.div variants={itemVariants} className="group">
+          <div className="relative rounded-2xl border border-slate-200 bg-white p-5 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-emerald-50/50 to-transparent rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-110" />
+            <div className="relative">
+              <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-100 mb-4">
+                <Users className="h-5 w-5 text-white" />
               </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-slate-900">{studentsCount}</div>
-              <p className="text-xs text-slate-500 mt-1 font-medium">{boysCount} {t('dashboard_boys' as any)} &bull; {studentsCount - boysCount} {t('dashboard_girls' as any)}</p>
-            </CardContent>
-          </Card>
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">{t('dashboard_total_students')}</p>
+              <p className="text-3xl font-black text-slate-900">{studentsCount}</p>
+              <p className="text-xs text-slate-400 mt-1.5 font-medium flex items-center gap-1">
+                <span className="h-1.5 w-1.5 rounded-full bg-blue-500" /> {boysCount} {t('dashboard_boys' as any)}
+                <span className="mx-1">·</span>
+                <span className="h-1.5 w-1.5 rounded-full bg-pink-500" /> {girlsCount} {t('dashboard_girls' as any)}
+              </p>
+            </div>
+          </div>
         </motion.div>
 
-        <motion.div variants={itemVariants}>
-          <Card className="hover:shadow-lg transition-all duration-300 border-slate-200 group">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-slate-600">{t('dashboard_active_students')}</CardTitle>
-              <div className="h-10 w-10 rounded-xl bg-indigo-50 group-hover:bg-indigo-100 flex items-center justify-center transition-colors">
-                  <Users className="h-5 w-5 text-indigo-600" />
+        <motion.div variants={itemVariants} className="group">
+          <div className="relative rounded-2xl border border-slate-200 bg-white p-5 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-indigo-50/50 to-transparent rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-110" />
+            <div className="relative">
+              <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-indigo-400 to-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-100 mb-4">
+                <UserCheck className="h-5 w-5 text-white" />
               </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-slate-900">{activeStudentsCount}</div>
-              <p className="text-xs text-slate-500 mt-1">{t('dashboard_currently_enrolled')}</p>
-            </CardContent>
-          </Card>
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">{t('dashboard_active_students')}</p>
+              <p className="text-3xl font-black text-slate-900">{activeStudentsCount}</p>
+              <div className="mt-2 h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                <div className="h-full bg-gradient-to-r from-indigo-400 to-indigo-600 rounded-full transition-all duration-500" style={{ width: `${activePercent}%` }} />
+              </div>
+              <p className="text-xs text-slate-400 mt-1 font-medium">{activePercent}% {t('dashboard_currently_enrolled')}</p>
+            </div>
+          </div>
         </motion.div>
 
-
-
-        <motion.div variants={itemVariants}>
-          <Card className="hover:shadow-lg transition-all duration-300 border-slate-200 group">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-slate-600">{t('dashboard_attendance_check')}</CardTitle>
-              <div className="h-10 w-10 rounded-xl bg-purple-50 group-hover:bg-purple-100 flex items-center justify-center transition-colors">
-                  <CalendarCheck className="h-5 w-5 text-purple-600" />
+        <motion.div variants={itemVariants} className="group">
+          <div className="relative rounded-2xl border border-slate-200 bg-white p-5 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-amber-50/50 to-transparent rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-110" />
+            <div className="relative">
+              <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-lg shadow-amber-100 mb-4">
+                <Cross className="h-5 w-5 text-white" />
               </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-slate-900">{t('common_live')}</div>
-              <p className="text-xs text-slate-500 mt-1">{t('dashboard_mark_today')}</p>
-            </CardContent>
-          </Card>
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">{t('dashboard_deacons')}</p>
+              <p className="text-3xl font-black text-slate-900">{deaconsCount}</p>
+              <p className="text-xs text-slate-400 mt-1.5 font-medium">{t('dashboard_all_deacons')}</p>
+            </div>
+          </div>
+        </motion.div>
+
+        <motion.div variants={itemVariants} className="group">
+          <div className="relative rounded-2xl border border-slate-200 bg-white p-5 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-purple-50/50 to-transparent rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-110" />
+            <div className="relative">
+              <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center shadow-lg shadow-purple-100 mb-4">
+                <Activity className="h-5 w-5 text-white" />
+              </div>
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">{t('dashboard_attendance_check')}</p>
+              <p className="text-3xl font-black text-slate-900">{t('common_live')}</p>
+              <p className="text-xs text-slate-400 mt-1.5 font-medium">{t('dashboard_mark_today')}</p>
+            </div>
+          </div>
         </motion.div>
       </div>
 
+      {/* Demographic Breakdown */}
       <motion.div variants={itemVariants}>
-        <Card className="border-slate-200">
-          <CardHeader className="bg-slate-50/50 border-b border-slate-100 pb-4 rounded-t-xl">
-            <CardTitle className="text-lg flex items-center font-bold text-slate-800">
-              <BookOpen className="h-5 w-5 mr-2 text-indigo-600" />
+        <div className="grid gap-5 grid-cols-1 sm:grid-cols-3">
+          {[
+            { label: "Children (< 13)", data: demographics.children, badgeClass: "bg-pink-50 text-pink-700 border-pink-100" },
+            { label: "Teens (13 - 17)", data: demographics.teens, badgeClass: "bg-indigo-50 text-indigo-700 border-indigo-100" },
+            { label: "Adults (18+)", data: demographics.adults, badgeClass: "bg-amber-50 text-amber-700 border-amber-100" }
+          ].map((group, gi) => {
+            const total = group.data.boys + group.data.girls
+            const boyPercent = total > 0 ? (group.data.boys / total) * 100 : 0
+            return (
+              <div key={gi} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm hover:shadow-md transition-all duration-300">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-sm font-bold text-slate-700">{group.label}</h3>
+                  <span className={`text-[10px] font-black px-2.5 py-1 rounded-full ${group.badgeClass}`}>
+                    {total} Total
+                  </span>
+                </div>
+                <div className="space-y-3">
+                  <div>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span className="font-semibold text-slate-600 flex items-center gap-1.5">
+                        <span className="h-2 w-2 rounded-full bg-blue-500" /> {t('dashboard_boys' as any)}
+                      </span>
+                      <span className="font-bold text-slate-900">{group.data.boys}</span>
+                    </div>
+                    <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                      <div className="h-full bg-blue-500 rounded-full transition-all duration-500" style={{ width: `${boyPercent}%` }} />
+                    </div>
+                  </div>
+                  <div>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span className="font-semibold text-slate-600 flex items-center gap-1.5">
+                        <span className="h-2 w-2 rounded-full bg-pink-500" /> {t('dashboard_girls' as any)}
+                      </span>
+                      <span className="font-bold text-slate-900">{group.data.girls}</span>
+                    </div>
+                    <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                      <div className="h-full bg-pink-500 rounded-full transition-all duration-500" style={{ width: `${100 - boyPercent}%` }} />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </motion.div>
+
+      {/* Stages Overview */}
+      <motion.div variants={itemVariants}>
+        <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+          <div className="px-6 py-5 border-b border-slate-100 bg-gradient-to-r from-indigo-50/50 to-transparent">
+            <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+              <GraduationCap className="h-5 w-5 text-indigo-600" />
               {t('dashboard_stages_overview' as any) || "Stages Overview"}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-6">
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
+            </h3>
+          </div>
+          <div className="p-6">
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
               {Array.from({length: 10}).map((_, idx) => {
-                const stage = idx + 1;
-                const count = stagesCount[stage] || 0;
+                const stage = idx + 1
+                const count = stagesCount[stage] || 0
+                const barWidth = maxStageCount > 0 ? (count / maxStageCount) * 100 : 0
                 return (
-                  <div key={stage} className="bg-white border text-center border-slate-100 rounded-xl p-3 shadow-sm hover:shadow-md transition-shadow">
-                    <p className="text-[10px] font-bold text-slate-500 mb-1 line-clamp-1" title={t(`stage_${stage}` as any)}>
+                  <div key={stage} className="group bg-white border border-slate-100 rounded-xl p-4 hover:shadow-md hover:border-indigo-200 transition-all duration-300 cursor-default">
+                    <p className="text-[10px] font-bold text-slate-500 mb-2 line-clamp-1 leading-relaxed" title={t(`stage_${stage}` as any)}>
                       {t(`stage_${stage}` as any)}
                     </p>
-                    <p className="text-2xl font-black text-indigo-600">{count}</p>
-                    <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Students</p>
+                    <p className="text-2xl font-black text-indigo-600 mb-2">{count}</p>
+                    <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-indigo-400 to-indigo-600 rounded-full transition-all duration-700 group-hover:from-indigo-500 group-hover:to-purple-600"
+                        style={{ width: `${barWidth}%` }}
+                      />
+                    </div>
+                    <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider mt-1.5">Students</p>
                   </div>
                 )
               })}
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </motion.div>
 
+      {/* Stage 1 Subjects */}
       <motion.div variants={itemVariants}>
-        <Card className="border-slate-200">
-          <CardHeader className="bg-indigo-50/50 border-b border-indigo-100 pb-4 rounded-t-xl">
-            <CardTitle className="text-lg flex items-center font-bold text-indigo-800">
-              <BookOpen className="h-5 w-5 mr-2 text-indigo-600" />
+        <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+          <div className="px-6 py-5 border-b border-slate-100 bg-gradient-to-r from-indigo-50/50 to-transparent">
+            <h3 className="text-lg font-bold text-indigo-800 flex items-center gap-2">
+              <BookOpen className="h-5 w-5 text-indigo-600" />
               {t('dashboard_stage1_subjects' as any)}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-6">
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
-              {Object.entries(topicCounts).map(([topic, count], idx) => (
-                  <div key={idx} className="bg-white border text-center border-slate-100 rounded-xl p-3 shadow-sm hover:shadow-md transition-shadow">
-                    <p className="text-[10px] font-bold text-slate-500 mb-1 line-clamp-1" title={topic}>
+            </h3>
+          </div>
+          <div className="p-6">
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+              {Object.entries(topicCounts).map(([topic, count], idx) => {
+                const maxTopicCount = Math.max(...Object.values(topicCounts), 1)
+                const barWidth = (count / maxTopicCount) * 100
+                return (
+                  <div key={idx} className="group bg-white border border-slate-100 rounded-xl p-4 hover:shadow-md hover:border-indigo-200 transition-all duration-300 cursor-default">
+                    <p className="text-[10px] font-bold text-slate-500 mb-2 line-clamp-2 leading-relaxed" title={topic}>
                       {topic}
                     </p>
-                    <p className="text-2xl font-black text-indigo-600">{count}</p>
-                    <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Students</p>
+                    <p className="text-2xl font-black text-indigo-600 mb-2">{count}</p>
+                    <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-indigo-400 to-indigo-600 rounded-full transition-all duration-700 group-hover:from-indigo-500 group-hover:to-purple-600"
+                        style={{ width: `${barWidth}%` }}
+                      />
+                    </div>
+                    <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider mt-1.5">Students</p>
                   </div>
-              ))}
+                )
+              })}
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </motion.div>
     </motion.div>
   )

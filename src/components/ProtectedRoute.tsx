@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import { supabase } from "@/lib/supabase/client"
 
@@ -9,8 +9,16 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
   const pathname = usePathname()
   const [isLoading, setIsLoading] = useState(true)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const recoveryChecked = useRef(false)
+  const isRecoveryFlow = useRef(false)
 
   useEffect(() => {
+    // Read hash SYNCHRONOUSLY before any Supabase calls (only on first run)
+    if (!recoveryChecked.current) {
+      recoveryChecked.current = true
+      isRecoveryFlow.current = window.location.hash.includes('type=recovery')
+    }
+
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession()
       
@@ -23,7 +31,8 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
         }
       } else {
         setIsAuthenticated(true)
-        if (pathname === "/login") {
+        // Don't redirect to dashboard if in password recovery mode
+        if (pathname === "/login" && !isRecoveryFlow.current) {
           router.push("/dashboard")
         }
         setIsLoading(false)
@@ -38,9 +47,6 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
         router.push("/login")
       } else if (session) {
         setIsAuthenticated(true)
-        if (pathname === "/login") {
-            router.push("/dashboard")
-        }
       }
     })
 

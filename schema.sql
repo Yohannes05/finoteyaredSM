@@ -2,7 +2,7 @@
 -- Run this script in your Supabase SQL Editor
 
 -- 1. Create Students Table
-CREATE TABLE public.students (
+CREATE TABLE IF NOT EXISTS public.students (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     first_name TEXT NOT NULL,
     last_name TEXT NOT NULL,
@@ -20,7 +20,7 @@ CREATE TABLE public.students (
 );
 
 -- 2. Create Payments Table
-CREATE TABLE public.payments (
+CREATE TABLE IF NOT EXISTS public.payments (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     student_id UUID REFERENCES public.students(id) ON DELETE CASCADE,
     amount NUMERIC NOT NULL,
@@ -32,7 +32,7 @@ CREATE TABLE public.payments (
 );
 
 -- 3. Create Attendance Table
-CREATE TABLE public.attendance (
+CREATE TABLE IF NOT EXISTS public.attendance (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     student_id UUID REFERENCES public.students(id) ON DELETE CASCADE,
     date DATE DEFAULT CURRENT_DATE,
@@ -40,18 +40,56 @@ CREATE TABLE public.attendance (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- 4. Enable Row Level Security (RLS)
+-- 4. Create Deacons Table
+CREATE TABLE IF NOT EXISTS public.deacons (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    first_name TEXT NOT NULL,
+    last_name TEXT NOT NULL,
+    phone TEXT,
+    photo_url TEXT,
+    ordination_date DATE,
+    status TEXT DEFAULT 'active' CHECK (status IN ('active', 'inactive')),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 5. Create Deacon Schedules Table
+CREATE TABLE IF NOT EXISTS public.deacon_schedules (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    deacon_id UUID REFERENCES public.deacons(id) ON DELETE CASCADE,
+    service_date DATE NOT NULL,
+    status TEXT DEFAULT 'scheduled' CHECK (status IN ('scheduled', 'served', 'cancelled')),
+    notes TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 6. Enable Row Level Security (RLS)
 ALTER TABLE public.students ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.payments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.attendance ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.deacons ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.deacon_schedules ENABLE ROW LEVEL SECURITY;
 
--- 5. Create Policies (Since Admin is the only actor, allow all for authenticated users)
+-- 7. Create Policies (Since Admin is the only actor, allow all for authenticated users)
+-- 7. Create Policies (Since Admin is the only actor, allow all for authenticated users)
+-- Drop existing policies first to avoid conflicts
+DROP POLICY IF EXISTS "Allow full access to authenticated users" ON public.students;
+DROP POLICY IF EXISTS "Allow full access to authenticated users" ON public.payments;
+DROP POLICY IF EXISTS "Allow full access to authenticated users" ON public.attendance;
+DROP POLICY IF EXISTS "Allow full access to authenticated users" ON public.deacons;
+DROP POLICY IF EXISTS "Allow full access to authenticated users" ON public.deacon_schedules;
+
 CREATE POLICY "Allow full access to authenticated users" ON public.students FOR ALL TO authenticated USING (true) WITH CHECK (true);
 CREATE POLICY "Allow full access to authenticated users" ON public.payments FOR ALL TO authenticated USING (true) WITH CHECK (true);
 CREATE POLICY "Allow full access to authenticated users" ON public.attendance FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "Allow full access to authenticated users" ON public.deacons FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "Allow full access to authenticated users" ON public.deacon_schedules FOR ALL TO authenticated USING (true) WITH CHECK (true);
 
--- 6. Storage Bucket for Avatars
-INSERT INTO storage.buckets (id, name, public) VALUES ('avatars', 'avatars', true);
+-- 8. Storage Bucket for Avatars
+INSERT INTO storage.buckets (id, name, public) VALUES ('avatars', 'avatars', true)
+ON CONFLICT (id) DO NOTHING;
+
+DROP POLICY IF EXISTS "Avatar images are publicly accessible." ON storage.objects;
+DROP POLICY IF EXISTS "Anyone can upload an avatar." ON storage.objects;
 
 CREATE POLICY "Avatar images are publicly accessible." ON storage.objects FOR SELECT USING (bucket_id = 'avatars');
 CREATE POLICY "Anyone can upload an avatar." ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'avatars');
