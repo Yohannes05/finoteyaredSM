@@ -68,7 +68,13 @@ export default function EditStudentPage({ params }: { params: { id: string } }) 
         finalPhotoUrl = publicUrlData.publicUrl
       }
 
-      const dataToInsert = { ...formData, photo_url: finalPhotoUrl }
+      const dataToInsert = {
+        ...formData,
+        photo_url: finalPhotoUrl,
+        enrollment_date: formData.enrollment_date || null,
+        ordination_date: formData.ordination_date || null,
+        age: formData.age || null,
+      }
 
       const { error } = await supabase.from('students').update(dataToInsert).eq('id', studentId)
       if(!error) {

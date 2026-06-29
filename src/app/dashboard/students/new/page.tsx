@@ -46,7 +46,13 @@ export default function NewStudentPage() {
         finalPhotoUrl = publicUrlData.publicUrl
       }
 
-      const dataToInsert = { ...formData, photo_url: finalPhotoUrl }
+      const dataToInsert = {
+        ...formData,
+        photo_url: finalPhotoUrl,
+        enrollment_date: formData.enrollment_date || null,
+        ordination_date: formData.ordination_date || null,
+        age: formData.age || null,
+      }
 
       const { error } = await supabase.from('students').insert([dataToInsert])
       if(!error) {
