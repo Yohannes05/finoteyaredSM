@@ -156,10 +156,16 @@ export default function NewStudentPage() {
                 </select>
               </div>
               <div className="space-y-2">
-                <Label className="text-slate-700 font-bold ml-1">Student Photo (optional)</Label>
+                <Label className="text-slate-700 font-bold ml-1">Student Photo (optional) <span className="text-xs font-normal text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200/50">Max 10MB</span></Label>
                 <Input type="file" accept="image/*" className="h-[46px] rounded-xl file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer text-slate-500 pt-[7px]" onChange={(e: any) => {
                   if (e.target.files && e.target.files[0]) {
-                    setImageFile(e.target.files[0])
+                    const file = e.target.files[0]
+                    if (file.size > 10 * 1024 * 1024) {
+                      toast.error("Photo must be less than 10MB")
+                      e.target.value = ''
+                      return
+                    }
+                    setImageFile(file)
                   }
                 }} />
               </div>

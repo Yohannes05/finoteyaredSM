@@ -90,6 +90,11 @@ CREATE POLICY "Allow full access to authenticated users" ON public.deacon_schedu
 INSERT INTO storage.buckets (id, name, public) VALUES ('avatars', 'avatars', true)
 ON CONFLICT (id) DO NOTHING;
 
+-- 8a. Enforce 10MB max file size on the avatars bucket (server-side)
+UPDATE storage.buckets
+SET file_size_limit = 10485760
+WHERE id = 'avatars';
+
 DROP POLICY IF EXISTS "Avatar images are publicly accessible." ON storage.objects;
 DROP POLICY IF EXISTS "Anyone can upload an avatar." ON storage.objects;
 
