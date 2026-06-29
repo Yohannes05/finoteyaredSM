@@ -186,13 +186,13 @@ export default function NewStudentPage() {
                 />
                 <Label htmlFor="is_deacon" className="text-sm font-bold text-slate-700 cursor-pointer flex items-center gap-2">
                   <Cross className="h-4 w-4 text-indigo-500" />
-                  This person is also a Deacon
+                  {t('deacon_toggle_label')}
                 </Label>
               </div>
               {formData.is_deacon && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pl-8">
                   <div className="space-y-2">
-                    <Label className="text-slate-700 font-bold ml-1">Ordination Date</Label>
+                    <Label className="text-slate-700 font-bold ml-1">{t('deacon_ordination_date')}</Label>
                     <EthioDatePicker 
                       value={formData.ordination_date || ''} 
                       onChange={(val) => setFormData({...formData, ordination_date: val})} 

@@ -243,6 +243,8 @@ export const translations = {
     student_edit_profile: "Edit Profile",
     header_student_details: "Student Details",
     header_edit_student: "Edit Student",
+    deacon_toggle_label: "This person is also a Deacon",
+    deacon_ordination_date: "Ordination Date",
   },
 
   am: {
@@ -445,7 +447,7 @@ export const translations = {
     schedule_served: "አገልግሏል",
     schedule_scheduled: "ተይዟል",
     schedule_cancelled: "ተሰርዟል",
-    schedule_rotation_queue: "�ዋፍ",
+    schedule_rotation_queue: "ተራ",
     schedule_select_date: "ቀን ይምረጡ",
     schedule_select_deacons: "ዲያቆናትን ይምረጡ",
     schedule_save: "መርሐ ግብር አስቀምጥ",
@@ -489,6 +491,8 @@ export const translations = {
     student_edit_profile: "መረጃ ቀይር",
     header_student_details: "የተማሪ መረጃ",
     header_edit_student: "መረጃ ቀይር",
+    deacon_toggle_label: "ይህ ሰው ደግሞ ዲያቆን ነው",
+    deacon_ordination_date: "የሹመት ቀን",
   },
 }
 
