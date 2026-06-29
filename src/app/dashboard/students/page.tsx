@@ -5,7 +5,7 @@ import { supabase } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { motion, AnimatePresence } from "framer-motion"
-import { UserPlus, Search, MoreHorizontal, User } from "lucide-react"
+import { UserPlus, Search, MoreHorizontal, User, Cross } from "lucide-react"
 import Link from "next/link"
 import { useLanguage } from "@/lib/LanguageContext"
 
@@ -92,7 +92,15 @@ export default function StudentsPage() {
                         <div className="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-colors">
                           <User className="h-4 w-4" />
                         </div>
-                        <span className="font-bold text-slate-900">{s.first_name} {s.last_name}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-slate-900">{s.first_name} {s.last_name}</span>
+                          {s.is_deacon && (
+                            <span className="flex items-center gap-1 text-[10px] font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-100">
+                              <Cross className="h-2.5 w-2.5" />
+                              {t('nav_deacons')}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 text-slate-600">{s.phone}</td>

@@ -53,10 +53,10 @@ export default function SchedulePage() {
   const daysInMonth = currentMonth === 13 ? 6 : 30
 
 
-  // Load deacons and schedules
+  // Load deacons and schedules (deacons are students with is_deacon = true)
   useEffect(() => {
     async function loadData() {
-      const { data: deaconsData } = await supabase.from('deacons').select('*').eq('status', 'active').order('created_at', { ascending: true })
+      const { data: deaconsData } = await supabase.from('students').select('*').eq('is_deacon', true).eq('status', 'active').order('created_at', { ascending: true })
       if (deaconsData) setDeacons(deaconsData)
 
       // Load all schedules for this month
@@ -67,7 +67,7 @@ export default function SchedulePage() {
 
       const { data: schedulesData } = await supabase
         .from('deacon_schedules')
-        .select('*, deacons!inner(first_name, last_name)')
+        .select('*, students!inner(first_name, last_name)')
         .gte('service_date', monthStart)
         .lte('service_date', monthEnd)
         .order('service_date', { ascending: true })
@@ -83,7 +83,7 @@ export default function SchedulePage() {
             service_date: s.service_date,
             status: s.status,
             notes: s.notes || '',
-            deacon_name: `${s.deacons?.first_name || ''} ${s.deacons?.last_name || ''}`
+            deacon_name: `${s.students?.first_name || ''} ${s.students?.last_name || ''}`
           })
         })
         setSchedules(grouped)
@@ -200,7 +200,7 @@ export default function SchedulePage() {
       // Refresh schedules
       const { data: updatedSchedules } = await supabase
         .from('deacon_schedules')
-        .select('*, deacons!inner(first_name, last_name)')
+        .select('*, students!inner(first_name, last_name)')
         .gte('service_date', `${currentYear}-${String(currentMonth).padStart(2, '0')}-01`)
         .lte('service_date', `${currentYear}-${String(currentMonth).padStart(2, '0')}-${daysInMonth}`)
 
@@ -215,7 +215,7 @@ export default function SchedulePage() {
             service_date: s.service_date,
             status: s.status,
             notes: s.notes || '',
-            deacon_name: `${s.deacons?.first_name || ''} ${s.deacons?.last_name || ''}`
+            deacon_name: `${s.students?.first_name || ''} ${s.students?.last_name || ''}`
           })
         })
         setSchedules(grouped)

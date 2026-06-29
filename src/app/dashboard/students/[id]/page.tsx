@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { motion, AnimatePresence } from "framer-motion"
-import { Phone, BookOpen, Calendar, Activity, X, User, CheckCircle2 } from "lucide-react"
+import { Phone, BookOpen, Calendar, Activity, X, User, CheckCircle2, Cross } from "lucide-react"
 import { useLanguage } from "@/lib/LanguageContext"
 
 export default function StudentDetailsPage({ params }: { params: { id: string } }) {
@@ -73,7 +73,15 @@ export default function StudentDetailsPage({ params }: { params: { id: string } 
           </div>
           
           <div className="flex-1 text-center sm:text-left mt-0 sm:mt-2">
-            <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-slate-900 mb-2">{student.first_name} {student.last_name}</h2>
+            <div className="flex items-center justify-center sm:justify-start gap-2 mb-2 flex-wrap">
+              <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-slate-900">{student.first_name} {student.last_name}</h2>
+              {student.is_deacon && (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-100 shadow-sm">
+                  <Cross className="h-3 w-3" />
+                  {t('nav_deacons')}
+                </span>
+              )}
+            </div>
             <div className="flex items-center justify-center sm:justify-start text-sm font-semibold text-slate-500 bg-white/60 backdrop-blur-sm px-3 py-1.5 rounded-lg inline-flex border border-slate-200/50 shadow-sm">
               <Calendar className="h-4 w-4 mr-2 text-indigo-500" /> {t('student_details_enrolled')} {student.enrollment_date}
             </div>

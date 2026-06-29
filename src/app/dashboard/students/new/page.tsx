@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from "@/components/ui/card"
 import { toast } from "sonner"
 import { motion } from "framer-motion"
-import { UserPlus, Save } from "lucide-react"
+import { UserPlus, Save, Cross } from "lucide-react"
 import { useLanguage } from "@/lib/LanguageContext"
 import { EthioDatePicker } from "@/components/ui/ethio-date-picker"
 import { getTodayEthioDate } from "@/lib/ethiopian-date"
@@ -20,7 +20,7 @@ export default function NewStudentPage() {
   const [imageFile, setImageFile] = useState<File | null>(null)
   const { t } = useLanguage()
   const [formData, setFormData] = useState({
-    first_name: "", last_name: "", age: "", academic_grade: "", gender: "male", phone: "", photo_url: "", learning_topic: "", learning_stage: 1, enrollment_date: getTodayEthioDate()
+    first_name: "", last_name: "", age: "", academic_grade: "", gender: "male", phone: "", photo_url: "", learning_topic: "", learning_stage: 1, enrollment_date: getTodayEthioDate(), is_deacon: false, ordination_date: ""
   })
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -172,6 +172,34 @@ export default function NewStudentPage() {
                   onChange={(val) => setFormData({...formData, enrollment_date: val})} 
                 />
               </div>
+            </div>
+
+            {/* Deacon toggle */}
+            <div className="border-t border-slate-100 pt-6">
+              <div className="flex items-center gap-3 mb-4">
+                <input
+                  type="checkbox"
+                  id="is_deacon"
+                  checked={formData.is_deacon || false}
+                  onChange={(e) => setFormData({...formData, is_deacon: e.target.checked})}
+                  className="h-5 w-5 rounded-md border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                />
+                <Label htmlFor="is_deacon" className="text-sm font-bold text-slate-700 cursor-pointer flex items-center gap-2">
+                  <Cross className="h-4 w-4 text-indigo-500" />
+                  This person is also a Deacon
+                </Label>
+              </div>
+              {formData.is_deacon && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pl-8">
+                  <div className="space-y-2">
+                    <Label className="text-slate-700 font-bold ml-1">Ordination Date</Label>
+                    <EthioDatePicker 
+                      value={formData.ordination_date || ''} 
+                      onChange={(val) => setFormData({...formData, ordination_date: val})} 
+                    />
+                  </div>
+                </div>
+              )}
             </div>
           </CardContent>
           <CardFooter className="flex justify-end gap-3 bg-slate-50/50 border-t border-slate-100 p-6 mt-8">

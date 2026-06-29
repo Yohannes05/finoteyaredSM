@@ -18,7 +18,8 @@ export default function DeaconsPage() {
 
   useEffect(() => {
     async function loadData() {
-      const { data: deaconsData } = await supabase.from('deacons').select('*').order('created_at', { ascending: false })
+      // Query from students table where is_deacon = true
+      const { data: deaconsData } = await supabase.from('students').select('*').eq('is_deacon', true).order('created_at', { ascending: false })
       if (deaconsData) setDeacons(deaconsData)
 
       // Get service counts for each deacon
@@ -57,7 +58,7 @@ export default function DeaconsPage() {
               {t('nav_schedule')}
             </Button>
           </Link>
-          <Link href="/dashboard/deacons/new">
+          <Link href="/dashboard/students/new">
             <Button className="rounded-xl shadow-lg shadow-emerald-100 bg-emerald-600 hover:bg-emerald-700 h-11 px-6 transition-all active:scale-95">
               <UserPlus className="h-4 w-4 mr-2" />
               {t('deacons_add')}

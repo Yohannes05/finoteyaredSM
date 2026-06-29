@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { motion, AnimatePresence } from "framer-motion"
-import { Phone, Calendar, Cross, Activity, X, User, CheckCircle2, XCircle } from "lucide-react"
+import { Phone, Calendar, Cross, Activity, X, User, CheckCircle2, XCircle, BookOpen } from "lucide-react"
 import { useLanguage } from "@/lib/LanguageContext"
 
 export default function DeaconDetailsPage({ params }: { params: { id: string } }) {
@@ -20,7 +20,8 @@ export default function DeaconDetailsPage({ params }: { params: { id: string } }
 
   useEffect(() => {
     async function loadDetails() {
-      const { data: deaconData } = await supabase.from('deacons').select('*').eq('id', deaconId).single()
+      // Query from students table where is_deacon = true
+      const { data: deaconData } = await supabase.from('students').select('*').eq('id', deaconId).eq('is_deacon', true).single()
       if(deaconData) setDeacon(deaconData)
       const { data: scheduleData } = await supabase.from('deacon_schedules').select('*').eq('deacon_id', deaconId).order('service_date', { ascending: false }).limit(20)
       if(scheduleData) setSchedules(scheduleData)
@@ -75,12 +76,27 @@ export default function DeaconDetailsPage({ params }: { params: { id: string } }
           </div>
           
           <div className="flex-1 text-center sm:text-left mt-0 sm:mt-2">
-            <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-slate-900 mb-2">
-              <Cross className="h-6 w-6 inline mr-2 text-indigo-500" />
-              {deacon.first_name} {deacon.last_name}
-            </h2>
-            <div className="flex items-center justify-center sm:justify-start text-sm font-semibold text-slate-500 bg-white/60 backdrop-blur-sm px-3 py-1.5 rounded-lg inline-flex border border-slate-200/50 shadow-sm">
-              <Calendar className="h-4 w-4 mr-2 text-indigo-500" /> {t('deacon_details_ordination')}: {deacon.ordination_date || 'N/A'}
+            <div className="flex items-center justify-center sm:justify-start gap-2 mb-2 flex-wrap">
+              <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-slate-900">
+                <Cross className="h-6 w-6 inline mr-2 text-indigo-500" />
+                {deacon.first_name} {deacon.last_name}
+              </h2>
+              {deacon.is_deacon && (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-100 shadow-sm">
+                  <Cross className="h-3 w-3" />
+                  {t('nav_deacons')}
+                </span>
+              )}
+            </div>
+            <div className="flex items-center justify-center sm:justify-start gap-3 text-sm font-semibold text-slate-500 bg-white/60 backdrop-blur-sm px-3 py-1.5 rounded-lg inline-flex border border-slate-200/50 shadow-sm">
+              <span className="flex items-center gap-1">
+                <Calendar className="h-4 w-4 text-indigo-500" /> {t('deacon_details_ordination')}: {deacon.ordination_date || 'N/A'}
+              </span>
+              {deacon.learning_stage && (
+                <span className="flex items-center gap-1 text-indigo-500">
+                  <BookOpen className="h-4 w-4" /> {t(`stage_${deacon.learning_stage}` as any)}
+                </span>
+              )}
             </div>
           </div>
           

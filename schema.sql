@@ -1,7 +1,7 @@
 -- schema.sql
 -- Run this script in your Supabase SQL Editor
 
--- 1. Create Students Table
+-- 1. Create Students Table (unified table — students AND deacons)
 CREATE TABLE IF NOT EXISTS public.students (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     first_name TEXT NOT NULL,
@@ -16,6 +16,8 @@ CREATE TABLE IF NOT EXISTS public.students (
     academic_grade TEXT,
     enrollment_date DATE DEFAULT CURRENT_DATE,
     status TEXT DEFAULT 'active' CHECK (status IN ('active', 'inactive')),
+    is_deacon BOOLEAN DEFAULT FALSE,
+    ordination_date DATE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -40,7 +42,7 @@ CREATE TABLE IF NOT EXISTS public.attendance (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- 4. Create Deacons Table
+-- 4. Deacons table kept for legacy data migration (new registrations use students.is_deacon)
 CREATE TABLE IF NOT EXISTS public.deacons (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     first_name TEXT NOT NULL,
@@ -52,10 +54,10 @@ CREATE TABLE IF NOT EXISTS public.deacons (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- 5. Create Deacon Schedules Table
+-- 5. Create Deacon Schedules Table (references students now)
 CREATE TABLE IF NOT EXISTS public.deacon_schedules (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    deacon_id UUID REFERENCES public.deacons(id) ON DELETE CASCADE,
+    deacon_id UUID REFERENCES public.students(id) ON DELETE CASCADE,
     service_date DATE NOT NULL,
     status TEXT DEFAULT 'scheduled' CHECK (status IN ('scheduled', 'served', 'cancelled')),
     notes TEXT,

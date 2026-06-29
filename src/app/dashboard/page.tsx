@@ -90,7 +90,7 @@ export default function Dashboard() {
       const { count: activeCount } = await supabase.from('students').select('*', { count: 'exact', head: true }).eq('status', 'active')
       setActiveStudentsCount(activeCount || 0)
 
-      const { count: deaconsCountData } = await supabase.from('deacons').select('*', { count: 'exact', head: true })
+      const { count: deaconsCountData } = await supabase.from('students').select('*', { count: 'exact', head: true }).eq('is_deacon', true)
       setDeaconsCount(deaconsCountData || 0)
 
       setIsLoading(false)
