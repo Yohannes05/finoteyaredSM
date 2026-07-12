@@ -12,6 +12,7 @@ import { motion } from "framer-motion"
 import { UserPlus, Save, Cross } from "lucide-react"
 import { useLanguage } from "@/lib/LanguageContext"
 import { EthioDatePicker } from "@/components/ui/ethio-date-picker"
+import { compressImage } from "@/lib/image"
 
 export default function EditStudentPage({ params }: { params: { id: string } }) {
   const router = useRouter()
@@ -52,12 +53,14 @@ export default function EditStudentPage({ params }: { params: { id: string } }) 
       let finalPhotoUrl = formData.photo_url
 
       if (imageFile) {
-        const fileExt = imageFile.name.split('.').pop()
+        // Compress image client-side before uploading (10MB → ~100KB)
+        const compressedBlob = await compressImage(imageFile)
+        const fileExt = 'jpg'
         const fileName = `${Math.random()}-${Date.now()}.${fileExt}`
         
         const { error: uploadError } = await supabase.storage
           .from('avatars')
-          .upload(fileName, imageFile)
+          .upload(fileName, compressedBlob, { contentType: 'image/jpeg' })
 
         if (uploadError) throw uploadError
 

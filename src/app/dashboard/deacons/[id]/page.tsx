@@ -59,7 +59,7 @@ export default function DeaconDetailsPage({ params }: { params: { id: string } }
             {deacon.photo_url ? (
               <button onClick={() => setShowPhotoPopup(true)} className="h-32 w-32 rounded-3xl overflow-hidden border-4 border-white shadow-xl bg-white cursor-pointer hover:opacity-95 transition-opacity ring-4 ring-indigo-50">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={deacon.photo_url} alt={`${deacon.first_name}`} className="h-full w-full object-cover" />
+                <img src={deacon.photo_url} alt={`${deacon.first_name}`} className="h-full w-full object-cover" loading="lazy" />
               </button>
             ) : (
               <div className="h-32 w-32 rounded-3xl bg-gradient-to-br from-indigo-100 to-purple-100 border-4 border-white shadow-xl flex items-center justify-center ring-4 ring-indigo-50">
@@ -227,7 +227,7 @@ export default function DeaconDetailsPage({ params }: { params: { id: string } }
                 <X className="h-5 w-5" />
               </button>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={deacon.photo_url} alt={`${deacon.first_name}`} className="max-w-full max-h-[85vh] object-contain" />
+              <img src={deacon.photo_url} alt={`${deacon.first_name}`} className="max-w-full max-h-[85vh] object-contain" loading="lazy" />
             </motion.div>
           </motion.div>
         )}
