@@ -5,15 +5,31 @@ import { supabase } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { motion, AnimatePresence } from "framer-motion"
-import { UserPlus, Search, MoreHorizontal, User, Cross } from "lucide-react"
+import { UserPlus, Search, MoreHorizontal, User, Cross, Trash2, AlertTriangle } from "lucide-react"
 import Link from "next/link"
 import { useLanguage } from "@/lib/LanguageContext"
+import { toast } from "sonner"
 
 export default function StudentsPage() {
   const [students, setStudents] = useState<any[]>([])
   const [searchQuery, setSearchQuery] = useState("")
   const [isLoading, setIsLoading] = useState(true)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
   const { t } = useLanguage()
+
+  const handleDelete = async (id: string) => {
+    setDeletingId(id)
+    try {
+      const { error } = await supabase.from('students').delete().eq('id', id)
+      if (error) throw error
+      toast.success(t('delete_success_student'))
+      setStudents(prev => prev.filter(s => s.id !== id))
+    } catch (err: any) {
+      toast.error(err.message || t('delete_error'))
+    } finally {
+      setDeletingId(null)
+    }
+  }
 
   useEffect(() => {
     async function getStudents() {
@@ -125,15 +141,33 @@ export default function StudentsPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-2">
+                      <div className="flex items-center justify-end gap-1">
                         <Link href={`/dashboard/students/${s.id}`}>
                           <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-lg hover:bg-slate-100">
                             <MoreHorizontal className="h-4 w-4 text-slate-400" />
                           </Button>
                         </Link>
-                        <Link href={`/dashboard/students/${s.id}`} className="text-indigo-600 hover:text-indigo-900 font-bold text-xs">
+                        <Link href={`/dashboard/students/${s.id}`} className="text-indigo-600 hover:text-indigo-900 font-bold text-xs whitespace-nowrap">
                           {t('students_view_details')}
                         </Link>
+                        <button
+                          onClick={() => {
+                            if (window.confirm(t('delete_confirm_title').replace('{{name}}', `${s.first_name} ${s.last_name}`) + '\n\n' + t('delete_confirm_message_student'))) {
+                              handleDelete(s.id)
+                            }
+                          }}
+                          disabled={deletingId === s.id}
+                          className="h-8 w-8 p-0 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-600 transition-colors disabled:opacity-50 flex items-center justify-center"
+                        >
+                          {deletingId === s.id ? (
+                            <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                            </svg>
+                          ) : (
+                            <Trash2 className="h-4 w-4" />
+                          )}
+                        </button>
                       </div>
                     </td>
                   </motion.tr>

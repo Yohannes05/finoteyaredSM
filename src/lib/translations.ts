@@ -245,6 +245,16 @@ export const translations = {
     header_edit_student: "Edit Student",
     deacon_toggle_label: "This person is also a Deacon",
     deacon_ordination_date: "Ordination Date",
+
+    // Delete
+    delete_confirm_title: "Delete {{name}}?",
+    delete_confirm_message_student: "This will permanently delete this student and all their attendance & payment records. This action cannot be undone.",
+    delete_confirm_message_deacon: "This will permanently delete this deacon and all their service records. This action cannot be undone.",
+    delete_confirm_button: "Yes, Delete",
+    delete_cancel: "Cancel",
+    delete_success_student: "Student deleted successfully!",
+    delete_success_deacon: "Deacon deleted successfully!",
+    delete_error: "Failed to delete. Please try again.",
   },
 
   am: {
@@ -493,6 +503,16 @@ export const translations = {
     header_edit_student: "መረጃ ቀይር",
     deacon_toggle_label: "ይህ ሰው ደግሞ ዲያቆን ነው",
     deacon_ordination_date: "የሹመት ቀን",
+
+    // Delete
+    delete_confirm_title: "{{name}}ን ሰርዝ?",
+    delete_confirm_message_student: "ይህ ተማሪን እና ሁሉንም የአቴዳንስ እና የክፍያ መረጃዎችን በቋሚነት ያስወግዳል። ይህ እርምጃ መቀልበስ አይቻልም።",
+    delete_confirm_message_deacon: "ይህ ዲያቆንን እና ሁሉንም የአገልግሎት መረጃዎችን በቋሚነት ያስወግዳል። ይህ እርምጃ መቀልበስ አይቻልም።",
+    delete_confirm_button: "አዎ፣ ሰርዝ",
+    delete_cancel: "ተመለስ",
+    delete_success_student: "ተማሪው በተሳካ ሁኔታ ተሰርዟል!",
+    delete_success_deacon: "ዲያቆኑ በተሳካ ሁኔታ ተሰርዟል!",
+    delete_error: "መሰረዝ አልተሳካም። እባክዎ እንደገና ይሞክሩ።",
   },
 }
 

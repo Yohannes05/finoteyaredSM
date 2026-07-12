@@ -6,8 +6,9 @@ import { useRouter } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { motion, AnimatePresence } from "framer-motion"
-import { Phone, BookOpen, Calendar, Activity, X, User, CheckCircle2, Cross } from "lucide-react"
+import { Phone, BookOpen, Calendar, Activity, X, User, CheckCircle2, Cross, Trash2, AlertTriangle } from "lucide-react"
 import { useLanguage } from "@/lib/LanguageContext"
+import { toast } from "sonner"
 
 export default function StudentDetailsPage({ params }: { params: { id: string } }) {
   const router = useRouter()
@@ -16,7 +17,32 @@ export default function StudentDetailsPage({ params }: { params: { id: string } 
   const [attendance, setAttendance] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [showPhotoPopup, setShowPhotoPopup] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
   const { t } = useLanguage()
+
+  const handleDelete = async () => {
+    setIsDeleting(true)
+    try {
+      // Delete photo from storage if exists
+      if (student?.photo_url) {
+        const photoPath = student.photo_url.split('/').pop()
+        if (photoPath) {
+          await supabase.storage.from('avatars').remove([photoPath])
+        }
+      }
+
+      // Deletes student; CASCADE handles attendance, payments, and deacon_schedules
+      const { error } = await supabase.from('students').delete().eq('id', studentId)
+      if (error) throw error
+      toast.success(t('delete_success_student'))
+      router.push('/dashboard/students')
+    } catch (err: any) {
+      toast.error(err.message || t('delete_error'))
+      setIsDeleting(false)
+      setShowDeleteModal(false)
+    }
+  }
 
   useEffect(() => {
     async function loadDetails() {
@@ -87,9 +113,12 @@ export default function StudentDetailsPage({ params }: { params: { id: string } 
             </div>
           </div>
           
-          <div className="shrink-0 mt-2 sm:mt-0 w-full sm:w-auto">
-            <button onClick={() => router.push(`/dashboard/students/${studentId}/edit`)} className="w-full sm:w-auto px-6 py-2.5 rounded-xl text-sm font-bold bg-slate-900 text-white hover:bg-slate-800 shadow-lg shadow-slate-200 transition-all active:scale-95 flex items-center justify-center gap-2">
+          <div className="shrink-0 mt-2 sm:mt-0 w-full sm:w-auto flex items-center gap-2">
+            <button onClick={() => router.push(`/dashboard/students/${studentId}/edit`)} className="px-6 py-2.5 rounded-xl text-sm font-bold bg-slate-900 text-white hover:bg-slate-800 shadow-lg shadow-slate-200 transition-all active:scale-95 flex items-center justify-center gap-2">
               <User className="h-4 w-4" /> {t('student_edit_profile' as any)}
+            </button>
+            <button onClick={() => setShowDeleteModal(true)} className="px-4 py-2.5 rounded-xl text-sm font-bold bg-white text-red-600 hover:bg-red-50 border-2 border-red-200 hover:border-red-300 shadow-lg shadow-red-100/50 transition-all active:scale-95 flex items-center justify-center gap-2">
+              <Trash2 className="h-4 w-4" />
             </button>
           </div>
         </div>
@@ -277,6 +306,70 @@ export default function StudentDetailsPage({ params }: { params: { id: string } 
               </button>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={student.photo_url} alt={`${student.first_name}`} className="max-w-full max-h-[85vh] object-contain" loading="lazy" />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Delete Confirmation Modal */}
+      <AnimatePresence>
+        {showDeleteModal && (
+          <motion.div 
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }} 
+            exit={{ opacity: 0 }} 
+            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4"
+            onClick={() => !isDeleting && setShowDeleteModal(false)}
+          >
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0 }} 
+              animate={{ scale: 1, opacity: 1 }} 
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="relative w-full max-w-md rounded-2xl shadow-2xl bg-white p-6"
+              onClick={(e: any) => e.stopPropagation()}
+            >
+              <div className="flex items-center gap-4 mb-4">
+                <div className="h-12 w-12 rounded-full bg-red-100 flex items-center justify-center shrink-0">
+                  <AlertTriangle className="h-6 w-6 text-red-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900">
+                    {t('delete_confirm_title').replace('{{name}}', `${student.first_name} ${student.last_name}`)}
+                  </h3>
+                  <p className="text-sm text-slate-500 mt-1">
+                    {t('delete_confirm_message_student')}
+                  </p>
+                </div>
+              </div>
+              <div className="flex gap-3 justify-end mt-6">
+                <button
+                  onClick={() => setShowDeleteModal(false)}
+                  disabled={isDeleting}
+                  className="px-5 py-2.5 rounded-xl text-sm font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-all disabled:opacity-50"
+                >
+                  {t('delete_cancel')}
+                </button>
+                <button
+                  onClick={handleDelete}
+                  disabled={isDeleting}
+                  className="px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-red-600 hover:bg-red-700 shadow-lg shadow-red-200 transition-all active:scale-95 disabled:opacity-50 flex items-center gap-2"
+                >
+                  {isDeleting ? (
+                    <>
+                      <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                      </svg>
+                      Deleting...
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="h-4 w-4" />
+                      {t('delete_confirm_button')}
+                    </>
+                  )}
+                </button>
+              </div>
             </motion.div>
           </motion.div>
         )}
