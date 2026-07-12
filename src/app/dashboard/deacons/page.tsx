@@ -5,7 +5,7 @@ import { supabase } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { motion, AnimatePresence } from "framer-motion"
-import { UserPlus, Search, MoreHorizontal, Cross, Calendar, Trash2 } from "lucide-react"
+import { UserPlus, Search, MoreHorizontal, Cross, Calendar, Trash2, AlertTriangle } from "lucide-react"
 import Link from "next/link"
 import { useLanguage } from "@/lib/LanguageContext"
 import { toast } from "sonner"
@@ -16,10 +16,14 @@ export default function DeaconsPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [isLoading, setIsLoading] = useState(true)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [deaconToDelete, setDeaconToDelete] = useState<any | null>(null)
   const { t } = useLanguage()
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async () => {
+    if (!deaconToDelete) return
+    const id = deaconToDelete.id
     setDeletingId(id)
+    setDeaconToDelete(null)
     try {
       const { error } = await supabase.from('students').delete().eq('id', id)
       if (error) throw error
@@ -160,11 +164,7 @@ export default function DeaconsPage() {
                           {t('students_view_details')}
                         </Link>
                         <button
-                          onClick={() => {
-                            if (window.confirm(t('delete_confirm_title').replace('{{name}}', `${d.first_name} ${d.last_name}`) + '\n\n' + t('delete_confirm_message_deacon'))) {
-                              handleDelete(d.id)
-                            }
-                          }}
+                          onClick={() => setDeaconToDelete(d)}
                           disabled={deletingId === d.id}
                           className="h-8 w-8 p-0 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-600 transition-colors disabled:opacity-50 flex items-center justify-center"
                         >
@@ -186,6 +186,70 @@ export default function DeaconsPage() {
           </table>
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <AnimatePresence>
+        {deaconToDelete && (
+          <motion.div 
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }} 
+            exit={{ opacity: 0 }} 
+            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4"
+            onClick={() => !deletingId && setDeaconToDelete(null)}
+          >
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0 }} 
+              animate={{ scale: 1, opacity: 1 }} 
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="relative w-full max-w-md rounded-2xl shadow-2xl bg-white p-6"
+              onClick={(e: any) => e.stopPropagation()}
+            >
+              <div className="flex items-center gap-4 mb-4">
+                <div className="h-12 w-12 rounded-full bg-red-100 flex items-center justify-center shrink-0">
+                  <AlertTriangle className="h-6 w-6 text-red-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900">
+                    {t('delete_confirm_title').replace('{{name}}', `${deaconToDelete.first_name} ${deaconToDelete.last_name}`)}
+                  </h3>
+                  <p className="text-sm text-slate-500 mt-1">
+                    {t('delete_confirm_message_deacon')}
+                  </p>
+                </div>
+              </div>
+              <div className="flex gap-3 justify-end mt-6">
+                <button
+                  onClick={() => setDeaconToDelete(null)}
+                  disabled={!!deletingId}
+                  className="px-5 py-2.5 rounded-xl text-sm font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-all disabled:opacity-50"
+                >
+                  {t('delete_cancel')}
+                </button>
+                <button
+                  onClick={handleDelete}
+                  disabled={!!deletingId}
+                  className="px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-red-600 hover:bg-red-700 shadow-lg shadow-red-200 transition-all active:scale-95 disabled:opacity-50 flex items-center gap-2"
+                >
+                  {deletingId ? (
+                    <>
+                      <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                      </svg>
+                      Deleting...
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="h-4 w-4" />
+                      {t('delete_confirm_button')}
+                    </>
+                  )}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
