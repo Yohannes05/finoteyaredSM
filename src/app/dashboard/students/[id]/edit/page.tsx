@@ -8,8 +8,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from "@/components/ui/card"
 import { toast } from "sonner"
-import { motion } from "framer-motion"
-import { UserPlus, Save, Cross } from "lucide-react"
+import { motion, AnimatePresence } from "framer-motion"
+import { UserPlus, Save, Cross, Trash2, AlertTriangle } from "lucide-react"
 import { useLanguage } from "@/lib/LanguageContext"
 import { EthioDatePicker } from "@/components/ui/ethio-date-picker"
 import { compressImage } from "@/lib/image"
@@ -19,7 +19,31 @@ export default function EditStudentPage({ params }: { params: { id: string } }) 
   const studentId = params.id
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [imageFile, setImageFile] = useState<File | null>(null)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
   const { t } = useLanguage()
+
+  const handleDelete = async () => {
+    setIsDeleting(true)
+    try {
+      // Delete photo from storage if exists
+      if (formData.photo_url) {
+        const photoPath = formData.photo_url.split('/').pop()
+        if (photoPath) {
+          await supabase.storage.from('avatars').remove([photoPath])
+        }
+      }
+
+      const { error } = await supabase.from('students').delete().eq('id', studentId)
+      if (error) throw error
+      toast.success(t('delete_success_student'))
+      router.push('/dashboard/students')
+    } catch (err: any) {
+      toast.error(err.message || t('delete_error'))
+      setIsDeleting(false)
+      setShowDeleteModal(false)
+    }
+  }
   const [formData, setFormData] = useState({
     first_name: "", last_name: "", age: "", gender: "male", phone: "", photo_url: "", learning_topic: "", learning_stage: 1, enrollment_date: "", is_deacon: false, ordination_date: ""
   })
@@ -236,7 +260,16 @@ export default function EditStudentPage({ params }: { params: { id: string } }) 
               )}
             </div>
           </CardContent>
-          <CardFooter className="flex justify-end gap-3 bg-slate-50/50 border-t border-slate-100 p-6 mt-8">
+          <CardFooter className="flex items-center gap-3 bg-slate-50/50 border-t border-slate-100 p-6 mt-8">
+            <button
+              type="button"
+              onClick={() => setShowDeleteModal(true)}
+              className="px-4 py-2.5 rounded-xl text-sm font-bold text-red-600 hover:bg-red-50 border-2 border-red-200 hover:border-red-300 transition-all active:scale-95 flex items-center justify-center gap-2"
+            >
+              <Trash2 className="h-4 w-4" />
+              <span className="hidden sm:inline">Delete</span>
+            </button>
+            <div className="flex-1" />
             <Button type="button" variant="outline" className="rounded-xl h-11 px-6 font-bold" onClick={() => router.back()}>
                 {t('new_student_cancel')}
             </Button>
@@ -251,6 +284,70 @@ export default function EditStudentPage({ params }: { params: { id: string } }) 
           </CardFooter>
         </form>
       </Card>
+
+      {/* Delete Confirmation Modal */}
+      <AnimatePresence>
+        {showDeleteModal && (
+          <motion.div 
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }} 
+            exit={{ opacity: 0 }} 
+            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4"
+            onClick={() => !isDeleting && setShowDeleteModal(false)}
+          >
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0 }} 
+              animate={{ scale: 1, opacity: 1 }} 
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="relative w-full max-w-md rounded-2xl shadow-2xl bg-white p-6"
+              onClick={(e: any) => e.stopPropagation()}
+            >
+              <div className="flex items-center gap-4 mb-4">
+                <div className="h-12 w-12 rounded-full bg-red-100 flex items-center justify-center shrink-0">
+                  <AlertTriangle className="h-6 w-6 text-red-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900">
+                    {t('delete_confirm_title').replace('{{name}}', `${formData.first_name} ${formData.last_name}`)}
+                  </h3>
+                  <p className="text-sm text-slate-500 mt-1">
+                    {t('delete_confirm_message_student')}
+                  </p>
+                </div>
+              </div>
+              <div className="flex gap-3 justify-end mt-6">
+                <button
+                  onClick={() => setShowDeleteModal(false)}
+                  disabled={isDeleting}
+                  className="px-5 py-2.5 rounded-xl text-sm font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-all disabled:opacity-50"
+                >
+                  {t('delete_cancel')}
+                </button>
+                <button
+                  onClick={handleDelete}
+                  disabled={isDeleting}
+                  className="px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-red-600 hover:bg-red-700 shadow-lg shadow-red-200 transition-all active:scale-95 disabled:opacity-50 flex items-center gap-2"
+                >
+                  {isDeleting ? (
+                    <>
+                      <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                      </svg>
+                      Deleting...
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="h-4 w-4" />
+                      {t('delete_confirm_button')}
+                    </>
+                  )}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   )
 }
