@@ -247,9 +247,7 @@ export default function EditStudentPage({ params }: { params: { id: string } }) 
                       value={formData.ordination_date || ''} 
                       onChange={(val) => setFormData({...formData, ordination_date: val})} 
                     />
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-3">
+                  </div>                    <div className="flex items-center gap-3">
                       <input
                         type="checkbox"
                         id="deacon_accepted"
@@ -262,8 +260,6 @@ export default function EditStudentPage({ params }: { params: { id: string } }) 
                         {t('deacon_accepted_label')}
                       </Label>
                     </div>
-                    <p className="text-xs text-slate-400 ml-1 mt-1">{t('deacon_accepted_desc')}</p>
-                  </div>
                 </div>
               )}
             </div>
