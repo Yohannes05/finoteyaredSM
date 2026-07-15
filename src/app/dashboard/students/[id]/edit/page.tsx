@@ -12,7 +12,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { UserPlus, Save, Cross, Trash2, AlertTriangle } from "lucide-react"
 import { useLanguage } from "@/lib/LanguageContext"
 import { EthioDatePicker } from "@/components/ui/ethio-date-picker"
-import { compressImage } from "@/lib/image"
+import StudentPhotoUpload from "@/components/StudentPhotoUpload"
 
 export default function EditStudentPage({ params }: { params: { id: string } }) {
   const router = useRouter()
@@ -45,7 +45,7 @@ export default function EditStudentPage({ params }: { params: { id: string } }) 
     }
   }
   const [formData, setFormData] = useState({
-    first_name: "", last_name: "", age: "", gender: "male", phone: "", photo_url: "", learning_topic: "", learning_stage: 1, enrollment_date: "", is_deacon: false, ordination_date: ""
+    first_name: "", last_name: "", age: "", gender: "male", phone: "", photo_url: "", learning_topic: "", learning_stage: 1, enrollment_date: "", is_deacon: false, ordination_date: "", deacon_accepted: false
   })
 
   useEffect(() => {
@@ -63,7 +63,8 @@ export default function EditStudentPage({ params }: { params: { id: string } }) 
             learning_stage: student.learning_stage || 1,
             enrollment_date: student.enrollment_date || "",
             is_deacon: student.is_deacon || false,
-            ordination_date: student.ordination_date || ""
+            ordination_date: student.ordination_date || "",
+            deacon_accepted: student.deacon_accepted || false
         })
       }
     }
@@ -77,8 +78,7 @@ export default function EditStudentPage({ params }: { params: { id: string } }) 
       let finalPhotoUrl = formData.photo_url
 
       if (imageFile) {
-        // Compress image client-side before uploading (10MB → ~100KB)
-        const compressedBlob = await compressImage(imageFile)
+        const compressedBlob = imageFile as Blob
         const fileExt = 'jpg'
         const fileName = `${Math.random()}-${Date.now()}.${fileExt}`
         
@@ -206,19 +206,11 @@ export default function EditStudentPage({ params }: { params: { id: string } }) 
                   <option value={10}>{t('stage_10' as any)}</option>
                 </select>
               </div>
-              <div className="space-y-2">
-                <Label className="text-slate-700 font-bold ml-1">Student Photo (optional) <span className="text-xs font-normal text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200/50">Max 10MB</span></Label>
-                <Input type="file" accept="image/*" className="h-[46px] rounded-xl file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer text-slate-500 pt-[7px]" onChange={(e: any) => {
-                  if (e.target.files && e.target.files[0]) {
-                    const file = e.target.files[0]
-                    if (file.size > 10 * 1024 * 1024) {
-                      toast.error("Photo must be less than 10MB")
-                      e.target.value = ''
-                      return
-                    }
-                    setImageFile(file)
-                  }
-                }} />
+              <div className="space-y-0">
+                <StudentPhotoUpload
+                  onFileSelect={(file) => setImageFile(file)}
+                  existingPhotoUrl={formData.photo_url}
+                />
               </div>
             </div>
             
@@ -255,6 +247,22 @@ export default function EditStudentPage({ params }: { params: { id: string } }) 
                       value={formData.ordination_date || ''} 
                       onChange={(val) => setFormData({...formData, ordination_date: val})} 
                     />
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="checkbox"
+                        id="deacon_accepted"
+                        checked={formData.deacon_accepted || false}
+                        onChange={(e) => setFormData({...formData, deacon_accepted: e.target.checked})}
+                        className="h-5 w-5 rounded-md border-slate-300 text-amber-600 focus:ring-amber-500 cursor-pointer"
+                      />
+                      <Label htmlFor="deacon_accepted" className="text-sm font-bold text-slate-700 cursor-pointer flex items-center gap-2">
+                        <Cross className="h-4 w-4 text-amber-500" />
+                        {t('deacon_accepted_label')}
+                      </Label>
+                    </div>
+                    <p className="text-xs text-slate-400 ml-1 mt-1">{t('deacon_accepted_desc')}</p>
                   </div>
                 </div>
               )}

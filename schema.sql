@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS public.students (
     status TEXT DEFAULT 'active' CHECK (status IN ('active', 'inactive')),
     is_deacon BOOLEAN DEFAULT FALSE,
     ordination_date DATE,
+    deacon_accepted BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 

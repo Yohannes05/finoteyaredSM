@@ -210,6 +210,7 @@ export const translations = {
     login_password_length: "Password must be at least 8 characters.",
 
     // Common
+    common_all: "All",
     common_back: "Back",
     common_live: "Live",
     common_no_email: "No email provided",
@@ -245,6 +246,10 @@ export const translations = {
     header_edit_student: "Edit Student",
     deacon_toggle_label: "This person is also a Deacon",
     deacon_ordination_date: "Ordination Date",
+    deacon_accepted_label: "Confirmed for Church Service",
+    deacon_accepted_desc: "Has been accepted by the Holy Father to serve inside the church",
+    deacon_accepted_yes: "✅ Accepted",
+    deacon_accepted_no: "Not Yet Accepted",
 
     // Delete
     delete_confirm_title: "Delete {{name}}?",
@@ -255,6 +260,26 @@ export const translations = {
     delete_success_student: "Student deleted successfully!",
     delete_success_deacon: "Deacon deleted successfully!",
     delete_error: "Failed to delete. Please try again.",
+
+    // Photo Upload
+    photo_title: "Photo",
+    photo_max_size: "Max 10MB",
+    photo_tap_to_add: "Tap to add photo",
+    photo_source_hint: "Camera or Gallery",
+    photo_remove: "Remove",
+    photo_tap_to_change: "Tap to change",
+    photo_optimizing: "Optimizing photo...",
+    photo_choose_source: "Choose photo source",
+    photo_choose_subtitle: "Select how you want to add a photo",
+    photo_take: "Take Photo",
+    photo_take_desc: "Use your device camera",
+    photo_gallery: "Choose from Gallery",
+    photo_gallery_desc: "Browse existing photos",
+    photo_cancel: "Cancel",
+    photo_error_size: "Photo must be less than 10MB",
+    photo_error_heic: "Could not convert HEIC image. Please ensure you have selected a valid photo or change your iPhone camera format to \"Most Compatible\" (JPEG) in Settings > Camera.",
+    photo_error_unsupported: "Failed to load image. This format may not be supported by your browser. Please try a JPEG or PNG image.",
+    photo_error_generic: "Failed to process image. Please try another photo.",
   },
 
   am: {
@@ -468,6 +493,7 @@ export const translations = {
     login_password_length: "የምስጢር ቁልፍ ቢያንስ 8 ቁምፊ መሆን አለበት።",
 
     // Common
+    common_all: "ሁሉም",
     common_back: "ወደ ኋላ",
     common_live: "ቀጥታ",
     common_no_email: "ኢሜይል አልተሰጠም",
@@ -503,6 +529,10 @@ export const translations = {
     header_edit_student: "መረጃ ቀይር",
     deacon_toggle_label: "ይህ ሰው ደግሞ ዲያቆን ነው",
     deacon_ordination_date: "የሹመት ቀን",
+    deacon_accepted_label: "ሚስጥር አይተሀል",
+    deacon_accepted_desc: "በሊቀ ጳጳሱ በቤተ ክህነት ውስጥ ለማገልገል የተሾመ",
+    deacon_accepted_yes: "✅ ሚስጥር አይተሀል",
+    deacon_accepted_no: "ገና አልተመለከተም",
 
     // Delete
     delete_confirm_title: "{{name}}ን ሰርዝ?",
@@ -513,6 +543,26 @@ export const translations = {
     delete_success_student: "ተማሪው በተሳካ ሁኔታ ተሰርዟል!",
     delete_success_deacon: "ዲያቆኑ በተሳካ ሁኔታ ተሰርዟል!",
     delete_error: "መሰረዝ አልተሳካም። እባክዎ እንደገና ይሞክሩ።",
+
+    // Photo Upload
+    photo_title: "ፎቶ",
+    photo_max_size: "ከፍተኛ 10 ሜባ",
+    photo_tap_to_add: "ፎቶ ለማከል ይንኩ",
+    photo_source_hint: "ካሜራ ወይም ጋለሪ",
+    photo_remove: "አስወግድ",
+    photo_tap_to_change: "ለመቀየር ይንኩ",
+    photo_optimizing: "ፎቶ እየተዘጋጀ ነው...",
+    photo_choose_source: "የፎቶ ምንጭ ይምረጡ",
+    photo_choose_subtitle: "ፎቶ ለማከል ዘዴውን ይምረጡ",
+    photo_take: "ፎቶ አንሳ",
+    photo_take_desc: "ካሜራዎን ይጠቀሙ",
+    photo_gallery: "ከጋለሪ ምረጥ",
+    photo_gallery_desc: "ያሉ ፎቶዎችን ያስሱ",
+    photo_cancel: "ሰርዝ",
+    photo_error_size: "ፎቶ ከ10 ሜባ ያነሰ መሆን አለበት",
+    photo_error_heic: "የHEIC ፎቶ መለወጥ አልተቻለም። እባክዎ የአይፎን ካሜራ ቅርጸትዎን ወደ \"Most Compatible\" (JPEG) ይቀይሩ።",
+    photo_error_unsupported: "ፎቶውን መጫን አልተቻለም። እባክዎ JPEG ወይም PNG ፎቶ ይሞክሩ።",
+    photo_error_generic: "ፎቶውን ማዘጋጀት አልተቻለም። እባክዎ ሌላ ፎቶ ይሞክሩ።",
   },
 }
 

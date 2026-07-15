@@ -19,7 +19,24 @@ export default function DeaconDetailsPage({ params }: { params: { id: string } }
   const [showPhotoPopup, setShowPhotoPopup] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [isUpdatingAccepted, setIsUpdatingAccepted] = useState(false)
   const { t } = useLanguage()
+
+  const handleToggleAccepted = async () => {
+    if (!deacon) return
+    const newValue = !deacon.deacon_accepted
+    setIsUpdatingAccepted(true)
+    try {
+      const { error } = await supabase.from('students').update({ deacon_accepted: newValue }).eq('id', deaconId)
+      if (error) throw error
+      setDeacon({ ...deacon, deacon_accepted: newValue })
+      toast.success(newValue ? '✅ ' + t('deacon_accepted_yes') : t('deacon_accepted_no'))
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to update status')
+    } finally {
+      setIsUpdatingAccepted(false)
+    }
+  }
 
   const handleDelete = async () => {
     setIsDeleting(true)
@@ -163,17 +180,64 @@ export default function DeaconDetailsPage({ params }: { params: { id: string } }
                  </div>
                  <div>
                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">{t('deacons_col_ordination')}</p>
-                     <p className="text-sm font-bold text-slate-900">{deacon.ordination_date || 'N/A'}</p>
-                 </div>
-               </div>
+                     <p className="text-sm font-bold text-slate-900">{deacon.ordination_date || 'N/A'}</p>                </div>
+              </div>
 
-               <div className="flex items-center gap-4">
-                 <div className="h-10 w-10 rounded-xl bg-amber-50 flex items-center justify-center shrink-0 border border-amber-100 shadow-sm">
+              <div className="flex items-center gap-4">
+                <div className="h-10 w-10 rounded-xl bg-amber-50 flex items-center justify-center shrink-0 border border-amber-100 shadow-sm">
                      <Activity className="h-5 w-5 text-amber-500" />
                  </div>
                  <div>
                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">{t('deacons_col_services')}</p>
                      <p className="text-sm font-bold text-slate-900">{servedCount} times</p>
+                 </div>
+               </div>
+
+               <div className="flex items-center gap-4">
+                 <div className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 border shadow-sm ${
+                   deacon.deacon_accepted
+                     ? 'bg-emerald-50 border-emerald-100'
+                     : 'bg-slate-100 border-slate-200'
+                 }`}>
+                   <CheckCircle2 className={`h-5 w-5 ${deacon.deacon_accepted ? 'text-emerald-500' : 'text-slate-300'}`} />
+                 </div>
+                 <div className="flex-1">
+                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">{t('deacon_accepted_label')}</p>
+                   <label className="flex items-center gap-3 cursor-pointer group" onClick={handleToggleAccepted}>
+                     <div className="relative">
+                       <input
+                         type="checkbox"
+                         checked={deacon.deacon_accepted || false}
+                         onChange={() => {}}
+                         disabled={isUpdatingAccepted}
+                         className="sr-only"
+                       />
+                       <div className={`h-5 w-5 rounded-md border-2 flex items-center justify-center transition-all ${
+                         deacon.deacon_accepted
+                           ? 'bg-emerald-500 border-emerald-500'
+                           : 'bg-white border-slate-300 group-hover:border-slate-400'
+                       } ${isUpdatingAccepted ? 'opacity-50' : ''}`}>
+                         {deacon.deacon_accepted && (
+                           <svg className="h-3 w-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                           </svg>
+                         )}
+                       </div>
+                     </div>
+                     <span className={`text-sm font-bold transition-colors ${
+                       deacon.deacon_accepted
+                         ? 'text-emerald-700'
+                         : 'text-slate-500 group-hover:text-slate-700'
+                     } ${isUpdatingAccepted ? 'opacity-50' : ''}`}>
+                       {deacon.deacon_accepted ? t('deacon_accepted_yes') : t('deacon_accepted_no')}
+                     </span>
+                     {isUpdatingAccepted && (
+                       <svg className="animate-spin h-3.5 w-3.5 text-indigo-500" viewBox="0 0 24 24">
+                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                       </svg>
+                     )}
+                   </label>
                  </div>
                </div>
              </CardContent>

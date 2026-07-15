@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from "react"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Users, BookOpen, Cross, GraduationCap, UserCheck, Activity } from "lucide-react"
+import { Users, BookOpen, Cross, GraduationCap, UserCheck, Activity, CheckCircle2, XCircle } from "lucide-react"
 import { supabase } from "@/lib/supabase/client"
 import { motion } from "framer-motion"
 import { useLanguage } from "@/lib/LanguageContext"
@@ -13,6 +13,7 @@ export default function Dashboard() {
   const [boysCount, setBoysCount] = useState(0)
   const [activeStudentsCount, setActiveStudentsCount] = useState(0)
   const [deaconsCount, setDeaconsCount] = useState(0)
+  const [acceptedDeaconsCount, setAcceptedDeaconsCount] = useState(0)
   const [girlsCount, setGirlsCount] = useState(0)
   const [demographics, setDemographics] = useState({
     children: { boys: 0, girls: 0 },
@@ -92,6 +93,9 @@ export default function Dashboard() {
 
       const { count: deaconsCountData } = await supabase.from('students').select('*', { count: 'exact', head: true }).eq('is_deacon', true)
       setDeaconsCount(deaconsCountData || 0)
+
+      const { count: acceptedDeaconsCountData } = await supabase.from('students').select('*', { count: 'exact', head: true }).eq('is_deacon', true).eq('deacon_accepted', true)
+      setAcceptedDeaconsCount(acceptedDeaconsCountData || 0)
 
       setIsLoading(false)
     }
@@ -201,6 +205,23 @@ export default function Dashboard() {
               <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">{t('dashboard_deacons')}</p>
               <p className="text-3xl font-black text-slate-900">{deaconsCount}</p>
               <p className="text-xs text-slate-400 mt-1.5 font-medium">{t('dashboard_all_deacons')}</p>
+              {/* Accepted vs Not Accepted breakdown */}
+              <div className="mt-4 pt-3 border-t border-slate-100 space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-semibold text-emerald-600 flex items-center gap-1.5">
+                    <CheckCircle2 className="h-3.5 w-3.5" />
+                    {t('deacon_accepted_yes')}
+                  </span>
+                  <span className="font-bold text-slate-900">{acceptedDeaconsCount}</span>
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-semibold text-slate-500 flex items-center gap-1.5">
+                    <XCircle className="h-3.5 w-3.5" />
+                    {t('deacon_accepted_no')}
+                  </span>
+                  <span className="font-bold text-slate-900">{deaconsCount - acceptedDeaconsCount}</span>
+                </div>
+              </div>
             </div>
           </div>
         </motion.div>

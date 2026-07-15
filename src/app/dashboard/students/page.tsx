@@ -13,6 +13,7 @@ import { toast } from "sonner"
 export default function StudentsPage() {
   const [students, setStudents] = useState<any[]>([])
   const [searchQuery, setSearchQuery] = useState("")
+  const [acceptedFilter, setAcceptedFilter] = useState<'all' | 'accepted' | 'not_accepted'>('all')
   const [isLoading, setIsLoading] = useState(true)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [studentToDelete, setStudentToDelete] = useState<any | null>(null)
@@ -45,8 +46,12 @@ export default function StudentsPage() {
   }, [])
 
   const filteredStudents = students.filter(s => {
-    const fullName = `${s.first_name} ${s.last_name}`.toLowerCase()
-    return fullName.includes(searchQuery.toLowerCase())
+    const matchesSearch = `${s.first_name} ${s.last_name}`.toLowerCase().includes(searchQuery.toLowerCase())
+    // For non-deacon students, pass through all filters. For deacons, apply acceptedFilter.
+    const matchesAccepted = acceptedFilter === 'all' || !s.is_deacon ||
+      (acceptedFilter === 'accepted' && s.deacon_accepted) ||
+      (acceptedFilter === 'not_accepted' && !s.deacon_accepted)
+    return matchesSearch && matchesAccepted
   })
 
   return (
@@ -65,14 +70,38 @@ export default function StudentsPage() {
       </div>
 
       <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-        <div className="p-3 sm:p-4 border-b border-slate-100 bg-slate-50/30 flex items-center gap-2">
-          <Search className="h-4 w-4 text-slate-400 ml-2 shrink-0" />
-          <input
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder={t('students_search')}
-            className="bg-transparent border-0 focus:ring-0 text-sm w-full placeholder:text-slate-400 text-black"
-          />
+        <div className="p-3 sm:p-4 border-b border-slate-100 bg-slate-50/30 flex flex-col sm:flex-row sm:items-center gap-3">
+          <div className="flex items-center gap-2 flex-1">
+            <Search className="h-4 w-4 text-slate-400 ml-2 shrink-0" />
+            <input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder={t('students_search')}
+              className="bg-transparent border-0 focus:ring-0 text-sm w-full placeholder:text-slate-400 text-black"
+            />
+          </div>
+          {/* ሚስጥር አይተሀል filter */}
+          <div className="flex items-center gap-1.5 shrink-0 border-t sm:border-t-0 border-slate-100 pt-2 sm:pt-0">
+            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mr-1 hidden sm:inline">Filter:</span>
+            {(['all', 'accepted', 'not_accepted'] as const).map((filter) => (
+              <button
+                key={filter}
+                type="button"
+                onClick={() => setAcceptedFilter(filter)}
+                className={`px-3.5 py-2 rounded-lg text-[12px] font-bold transition-all active:scale-95 ${
+                  acceptedFilter === filter
+                    ? filter === 'accepted'
+                      ? 'bg-emerald-100 text-emerald-800 shadow-sm'
+                      : filter === 'not_accepted'
+                        ? 'bg-slate-200 text-slate-700 shadow-sm'
+                        : 'bg-indigo-100 text-indigo-800 shadow-sm'
+                    : 'bg-white text-slate-500 hover:bg-slate-100 border border-slate-200'
+                }`}
+              >
+                {filter === 'all' ? t('common_all') : filter === 'accepted' ? t('deacon_accepted_yes') : t('deacon_accepted_no')}
+              </button>
+            ))}
+          </div>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left whitespace-nowrap">
@@ -118,6 +147,16 @@ export default function StudentsPage() {
                             <span className="flex items-center gap-1 text-[10px] font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-100">
                               <Cross className="h-2.5 w-2.5" />
                               {t('nav_deacons')}
+                            </span>
+                          )}
+                          {s.is_deacon && s.deacon_accepted && (
+                            <span className="flex items-center text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">
+                              ✅ {t('deacon_accepted_label')}
+                            </span>
+                          )}
+                          {s.is_deacon && !s.deacon_accepted && (
+                            <span className="flex items-center text-[10px] font-medium text-slate-400 bg-slate-50 px-2 py-0.5 rounded-full border border-slate-100">
+                              {t('deacon_accepted_no')}
                             </span>
                           )}
                         </div>

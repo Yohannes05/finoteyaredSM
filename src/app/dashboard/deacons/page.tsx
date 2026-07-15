@@ -14,6 +14,7 @@ export default function DeaconsPage() {
   const [deacons, setDeacons] = useState<any[]>([])
   const [serviceCounts, setServiceCounts] = useState<Record<string, number>>({})
   const [searchQuery, setSearchQuery] = useState("")
+  const [acceptedFilter, setAcceptedFilter] = useState<'all' | 'accepted' | 'not_accepted'>('all')
   const [isLoading, setIsLoading] = useState(true)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [deaconToDelete, setDeaconToDelete] = useState<any | null>(null)
@@ -60,8 +61,11 @@ export default function DeaconsPage() {
   }, [])
 
   const filteredDeacons = deacons.filter(d => {
-    const fullName = `${d.first_name} ${d.last_name}`.toLowerCase()
-    return fullName.includes(searchQuery.toLowerCase())
+    const matchesSearch = `${d.first_name} ${d.last_name}`.toLowerCase().includes(searchQuery.toLowerCase())
+    const matchesAccepted = acceptedFilter === 'all' || 
+      (acceptedFilter === 'accepted' && d.deacon_accepted) ||
+      (acceptedFilter === 'not_accepted' && !d.deacon_accepted)
+    return matchesSearch && matchesAccepted
   })
 
   return (
@@ -88,14 +92,38 @@ export default function DeaconsPage() {
       </div>
 
       <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-        <div className="p-3 sm:p-4 border-b border-slate-100 bg-slate-50/30 flex items-center gap-2">
-          <Search className="h-4 w-4 text-slate-400 ml-2 shrink-0" />
-          <input
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder={t('deacons_search')}
-            className="bg-transparent border-0 focus:ring-0 text-sm w-full placeholder:text-slate-400 text-black"
-          />
+        <div className="p-3 sm:p-4 border-b border-slate-100 bg-slate-50/30 flex flex-col sm:flex-row sm:items-center gap-3">
+          <div className="flex items-center gap-2 flex-1">
+            <Search className="h-4 w-4 text-slate-400 ml-2 shrink-0" />
+            <input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder={t('deacons_search')}
+              className="bg-transparent border-0 focus:ring-0 text-sm w-full placeholder:text-slate-400 text-black"
+            />
+          </div>
+          {/* ሚስጥር አይተሀል filter */}
+          <div className="flex items-center gap-1.5 shrink-0 border-t sm:border-t-0 border-slate-100 pt-2 sm:pt-0">
+            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mr-1 hidden sm:inline">Filter:</span>
+            {(['all', 'accepted', 'not_accepted'] as const).map((filter) => (
+              <button
+                key={filter}
+                type="button"
+                onClick={() => setAcceptedFilter(filter)}
+                className={`px-3.5 py-2 rounded-lg text-[12px] font-bold transition-all active:scale-95 ${
+                  acceptedFilter === filter
+                    ? filter === 'accepted'
+                      ? 'bg-emerald-100 text-emerald-800 shadow-sm'
+                      : filter === 'not_accepted'
+                        ? 'bg-slate-200 text-slate-700 shadow-sm'
+                        : 'bg-indigo-100 text-indigo-800 shadow-sm'
+                    : 'bg-white text-slate-500 hover:bg-slate-100 border border-slate-200'
+                }`}
+              >
+                {filter === 'all' ? t('common_all' as any) : filter === 'accepted' ? t('deacon_accepted_yes') : t('deacon_accepted_no')}
+              </button>
+            ))}
+          </div>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left whitespace-nowrap">
@@ -104,6 +132,7 @@ export default function DeaconsPage() {
                 <th className="px-6 py-4 font-semibold text-slate-600 uppercase tracking-wider text-[10px]">{t('deacons_col_name')}</th>
                 <th className="px-6 py-4 font-semibold text-slate-600 uppercase tracking-wider text-[10px]">{t('deacons_col_phone')}</th>
                 <th className="px-6 py-4 font-semibold text-slate-600 uppercase tracking-wider text-[10px]">{t('deacons_col_ordination')}</th>
+                <th className="px-6 py-4 font-semibold text-slate-600 uppercase tracking-wider text-[10px]">{t('deacon_accepted_label')}</th>
                 <th className="px-6 py-4 font-semibold text-slate-600 uppercase tracking-wider text-[10px]">{t('deacons_col_services')}</th>
                 <th className="px-6 py-4 font-semibold text-slate-600 uppercase tracking-wider text-[10px]">{t('deacons_col_status')}</th>
                 <th className="px-6 py-4 text-right font-semibold text-slate-600 uppercase tracking-wider text-[10px]">{t('deacons_col_actions')}</th>
@@ -118,12 +147,13 @@ export default function DeaconsPage() {
                       <td className="px-6 py-4"><Skeleton className="h-4 w-24" /></td>
                       <td className="px-6 py-4"><Skeleton className="h-4 w-28" /></td>
                       <td className="px-6 py-4"><Skeleton className="h-4 w-16" /></td>
+                      <td className="px-6 py-4"><Skeleton className="h-4 w-12" /></td>
                       <td className="px-6 py-4"><Skeleton className="h-4 w-16 rounded-full" /></td>
                       <td className="px-6 py-4 text-right"><Skeleton className="h-4 w-8 ml-auto" /></td>
                     </tr>
                   ))
                 ) : filteredDeacons.length === 0 ? (
-                  <tr><td colSpan={6} className="p-12 text-center text-slate-500 italic">{t('deacons_empty')}</td></tr>
+                  <tr><td colSpan={7} className="p-12 text-center text-slate-500 italic">{t('deacons_empty')}</td></tr>
                 ) : filteredDeacons.map((d, idx) => (
                   <motion.tr
                     key={d.id}
@@ -142,6 +172,17 @@ export default function DeaconsPage() {
                     </td>
                     <td className="px-6 py-4 text-slate-600">{d.phone || '—'}</td>
                     <td className="px-6 py-4 text-slate-600">{d.ordination_date || '—'}</td>
+                    <td className="px-6 py-4">
+                      {d.deacon_accepted ? (
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-100 shadow-sm">
+                          {t('deacon_accepted_yes')}
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold bg-slate-50 text-slate-400 border border-slate-100">
+                          {t('deacon_accepted_no')}
+                        </span>
+                      )}
+                    </td>
                     <td className="px-6 py-4">
                       <span className="font-bold text-indigo-600">{serviceCounts[d.id] || 0}</span>
                     </td>
